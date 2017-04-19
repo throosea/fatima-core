@@ -32,7 +32,7 @@ import (
 	"unsafe"
 	"encoding/binary"
 	"runtime"
-	"throosea.com/fatima/log"
+	"throosea.com/log"
 )
 
 var (

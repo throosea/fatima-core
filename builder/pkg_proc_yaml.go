@@ -34,7 +34,7 @@ import (
 	"io/ioutil"
 	"strings"
 	"throosea.com/fatima"
-	"throosea.com/fatima/log"
+	"throosea.com/log"
 	"bytes"
 )
 

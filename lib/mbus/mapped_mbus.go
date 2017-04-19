@@ -28,7 +28,7 @@ import (
 	"strings"
 	"sync"
 	"fmt"
-	"throosea.com/fatima/log"
+	"throosea.com/log"
 	"throosea.com/fatima/lib"
 	"os"
 )

@@ -31,7 +31,7 @@ import (
 	"path/filepath"
 	"syscall"
 	"throosea.com/fatima"
-	"throosea.com/fatima/log"
+	"throosea.com/log"
 	"throosea.com/fatima/monitor"
 	"errors"
 	"strconv"
@@ -44,6 +44,15 @@ const (
 	proc_status_ready
 	proc_status_running
 	proc_status_shutdown
+)
+
+const (
+	LOG4FATIMA_PROP_BACKUP_DAYS           = "log4fatima.backup.days"
+	LOG4FATIMA_PROP_SHOW_METHOD           = "log4fatima.method.show"
+	LOG4FATIMA_PROP_SOURCE_PRINTSIZE      = "log4fatima.source.printsize"
+	LOG4FATIMA_PROP_FILE_SIZE_LIMIT       = "log4fatima.filesize.limit"
+	LOG4FATIMA_DEFAULT_BACKUP_FILE_NUMBER = 30
+	LOG4FATIMA_DEFAULT_SOURCE_PRINTSIZE = 30
 )
 
 type FatimaProcessStatus uint8
@@ -195,7 +204,7 @@ func (process *FatimaRuntimeProcess) Run() {
 
 	if !process.interactor.Initialize() {
 		log.Warn("프로세스 초기화에 실패하였습니다. %s 프로그램을 종료합니다", process.env.GetSystemProc().GetProgramName())
-		log.WaitLoggingShutdown()
+		log.Close()
 		return
 	}
 
@@ -206,7 +215,7 @@ func (process *FatimaRuntimeProcess) Run() {
 			log.Warn("**PANIC** while running", errors.New(fmt.Sprintf("%s", r)))
 			process.status = proc_status_shutdown
 			process.interactor.Shutdown()
-			log.WaitLoggingShutdown()
+			log.Close()
 			return
 		}
 	}()
@@ -254,48 +263,7 @@ func (process *FatimaRuntimeProcess) Initialize(builder FatimaRuntimeBuilder)  {
 
 	pkgProc := process.getThisPkgProc()
 
-	// log4fatima show method preference
-	v, ok := builder.GetConfig().GetValue(log.LOG4FATIMA_PROP_SHOW_METHOD)
-	if ok {
-		if strings.ToLower(v) == "false" {
-			log.SetShowMethod(false)
-		} else {
-			log.SetShowMethod(true)
-		}
-	}
-
-	// log4fatima source printsize
-	v, ok = builder.GetConfig().GetValue(log.LOG4FATIMA_PROP_SOURCE_PRINTSIZE)
-	if ok {
-		i, err := strconv.Atoi(v)
-		if err != nil {
-			log.Warn("[%s] invalid value format : %s", log.LOG4FATIMA_PROP_SOURCE_PRINTSIZE, v)
-		} else {
-			log.SetSourcePrintSize(i)
-		}
-	}
-
-	// log4fatima backup days
-	v, ok = builder.GetConfig().GetValue(log.LOG4FATIMA_PROP_BACKUP_DAYS)
-	if ok {
-		i, err := strconv.Atoi(v)
-		if err != nil {
-			log.Warn("[%s] invalid value format : %s", log.LOG4FATIMA_PROP_BACKUP_DAYS, v)
-		} else {
-			log.SetBackupDays(i)
-		}
-	}
-
-	// log4fatima file size limit
-	v, ok = builder.GetConfig().GetValue(log.LOG4FATIMA_PROP_FILE_SIZE_LIMIT)
-	if ok {
-		i, err := strconv.Atoi(v)
-		if err != nil {
-			log.Warn("[%s] invalid value format : %s", log.LOG4FATIMA_PROP_FILE_SIZE_LIMIT, v)
-		} else {
-			log.SetFileSizeLimit(i)
-		}
-	}
+	buildLogging(builder)
 
 	process.logLevel = pkgProc.GetLogLevel()
 	if process.logLevel != log.GetLevel() {
@@ -305,6 +273,51 @@ func (process *FatimaRuntimeProcess) Initialize(builder FatimaRuntimeBuilder)  {
 
 	process.parepareProcFolder(pkgProc)
 	process.status = proc_status_ready
+}
+
+func buildLogging(builder FatimaRuntimeBuilder) {
+	// log4fatima show method preference
+	v, ok := builder.GetConfig().GetValue(LOG4FATIMA_PROP_SHOW_METHOD)
+	if ok {
+		if strings.ToLower(v) == "false" {
+			log.SetShowMethod(false)
+		} else {
+			log.SetShowMethod(true)
+		}
+	}
+
+	// log4fatima source printsize
+	v, ok = builder.GetConfig().GetValue(LOG4FATIMA_PROP_SOURCE_PRINTSIZE)
+	if ok {
+		i, err := strconv.Atoi(v)
+		if err != nil {
+			log.Warn("[%s] invalid value format : %s", LOG4FATIMA_PROP_SOURCE_PRINTSIZE, v)
+		} else {
+			log.SetSourcePrintSize(i)
+		}
+	}
+
+	// log4fatima backup days
+	v, ok = builder.GetConfig().GetValue(LOG4FATIMA_PROP_BACKUP_DAYS)
+	if ok {
+		i, err := strconv.Atoi(v)
+		if err != nil {
+			log.Warn("[%s] invalid value format : %s", LOG4FATIMA_PROP_BACKUP_DAYS, v)
+		} else {
+			log.SetKeepingFileDays(i)
+		}
+	}
+
+	// log4fatima file size limit
+	v, ok = builder.GetConfig().GetValue(LOG4FATIMA_PROP_FILE_SIZE_LIMIT)
+	if ok {
+		i, err := strconv.Atoi(v)
+		if err != nil {
+			log.Warn("[%s] invalid value format : %s", LOG4FATIMA_PROP_FILE_SIZE_LIMIT, v)
+		} else {
+			log.SetFileSizeLimit(i)
+		}
+	}
 }
 
 func (process *FatimaRuntimeProcess) getThisPkgProc() fatima.FatimaPkgProc {
@@ -368,9 +381,8 @@ func init() {
 		os.Exit(0)
 	}
 
-	log.Initialize(
-		fatimaProcess.env.GetFolderGuide().GetLogFolder(),
-		fatimaProcess.env.GetSystemProc().GetProgramName())
+	logPref, _ := log.NewPreference(fatimaProcess.env.GetFolderGuide().GetLogFolder())
+	log.Initialize(logPref)
 
 	log.Warn("%s 프로세스를 시작합니다", fatimaProcess.env.GetSystemProc().GetProgramName())
 	//if fatimaProcess.status == proc_status_shutdown {

@@ -25,7 +25,7 @@ package builder
 
 import (
 	"throosea.com/fatima"
-	"throosea.com/fatima/log"
+	"throosea.com/log"
 	"throosea.com/fatima/monitor"
 	"path/filepath"
 	"throosea.com/fatima/lib/mbus"

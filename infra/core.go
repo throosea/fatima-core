@@ -29,7 +29,7 @@ import (
 	"throosea.com/fatima/monitor"
 	"time"
 	"net/http"
-	"throosea.com/fatima/log"
+	"throosea.com/log"
 )
 
 type ProcessCoreWorker interface {

@@ -32,7 +32,7 @@ import (
 	"strconv"
 	"strings"
 	"throosea.com/fatima"
-	"throosea.com/fatima/log"
+	"throosea.com/log"
 	"throosea.com/fatima/monitor"
 )
 
@@ -121,7 +121,7 @@ func (this *CentralFilebaseManagement) GetLogLevel() (log.LogLevel, bool) {
 		return log.LOG_NONE, false
 	}
 
-	loglevel, err1 := log.ToLogLevel(value)
+	loglevel, err1 := log.ConvertHexaToLogLevel(value)
 	if err1 != nil {
 		return log.LOG_NONE, false
 	}

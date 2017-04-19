@@ -26,7 +26,7 @@ package mbus
 import (
 	"fmt"
 	"time"
-	"throosea.com/fatima/log"
+	"throosea.com/log"
 	"throosea.com/fatima/lib"
 )
 

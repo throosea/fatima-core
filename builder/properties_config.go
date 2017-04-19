@@ -27,7 +27,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"throosea.com/fatima"
-	"throosea.com/fatima/log"
+	"throosea.com/log"
 )
 
 type PropertyConfigReader struct {

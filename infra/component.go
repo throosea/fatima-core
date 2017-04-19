@@ -26,7 +26,7 @@ package infra
 import (
 	"throosea.com/fatima"
 	"throosea.com/fatima/lib"
-	"throosea.com/fatima/log"
+	"throosea.com/log"
 	"errors"
 	"fmt"
 )
@@ -124,7 +124,7 @@ func shutdownComponent(program string) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Warn("**PANIC** while shutdown", errors.New(fmt.Sprintf("%s", r)))
-			log.WaitLoggingShutdown()
+			log.Close()
 			return
 		}
 	}()
@@ -144,5 +144,5 @@ func shutdownComponent(program string) {
 		log.Warn("%s 프로그램을 종료합니다", program)
 	}
 
-	log.WaitLoggingShutdown()
+	log.Close()
 }

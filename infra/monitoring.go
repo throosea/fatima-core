@@ -25,7 +25,7 @@ package infra
 
 import (
 	"throosea.com/fatima/builder"
-	"throosea.com/fatima/log"
+	"throosea.com/log"
 	"throosea.com/fatima/monitor"
 )
 

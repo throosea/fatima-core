@@ -24,7 +24,7 @@
 package monitor
 
 import (
-	log "throosea.com/fatima/log"
+	log "throosea.com/log"
 )
 
 type SystemStatusMonitor interface {

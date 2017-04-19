@@ -30,7 +30,7 @@ import (
 	"path/filepath"
 	"strings"
 	"throosea.com/fatima"
-	"throosea.com/fatima/log"
+	"throosea.com/log"
 	"io/ioutil"
 	"time"
 )
