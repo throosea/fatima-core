@@ -24,7 +24,7 @@
 package fatima
 
 import (
-	log "throosea.com/fatima/log"
+	log "throosea.com/log"
 )
 
 type FatimaPkgProc interface {
