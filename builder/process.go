@@ -381,7 +381,7 @@ func init() {
 		os.Exit(0)
 	}
 
-	logPref, _ := log.NewPreference(fatimaProcess.env.GetFolderGuide().GetLogFolder())
+	logPref := log.NewPreference(fatimaProcess.env.GetFolderGuide().GetLogFolder())
 	log.Initialize(logPref)
 
 	log.Warn("%s 프로세스를 시작합니다", fatimaProcess.env.GetSystemProc().GetProgramName())
