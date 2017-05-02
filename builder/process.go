@@ -116,7 +116,6 @@ type FatimaRuntimeProcess struct {
 	interactor    fatima.ProcessInteractor
 	notifyHandler monitor.SystemNotifyHandler
 	status        FatimaProcessStatus
-	//running       bool
 }
 
 func (process *FatimaRuntimeProcess) GetEnv() fatima.FatimaEnv {
@@ -293,7 +292,7 @@ func buildLogging(builder FatimaRuntimeBuilder) {
 		if err != nil {
 			log.Warn("[%s] invalid value format : %s", LOG4FATIMA_PROP_SOURCE_PRINTSIZE, v)
 		} else {
-			log.SetSourcePrintSize(i)
+			log.SetSourcePrintSize(uint8(i))
 		}
 	}
 
@@ -304,7 +303,7 @@ func buildLogging(builder FatimaRuntimeBuilder) {
 		if err != nil {
 			log.Warn("[%s] invalid value format : %s", LOG4FATIMA_PROP_BACKUP_DAYS, v)
 		} else {
-			log.SetKeepingFileDays(i)
+			log.SetKeepingFileDays(uint16(i))
 		}
 	}
 
@@ -315,7 +314,7 @@ func buildLogging(builder FatimaRuntimeBuilder) {
 		if err != nil {
 			log.Warn("[%s] invalid value format : %s", LOG4FATIMA_PROP_FILE_SIZE_LIMIT, v)
 		} else {
-			log.SetFileSizeLimit(i)
+			log.SetFileSizeLimitMB(uint16(i))
 		}
 	}
 }
