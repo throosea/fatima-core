@@ -43,7 +43,7 @@ const (
 	applicationJsonUtf8Value = "application/json;charset=UTF-8"
 )
 
-func NewSlackNotification(fatimaRuntime fatima.FatimaRuntime, key string) *SlackNotification {
+func NewSlackNotification(fatimaRuntime fatima.FatimaRuntime) *SlackNotification {
 	return NewSlackNotificationWithKey(fatimaRuntime, "default")
 }
 
