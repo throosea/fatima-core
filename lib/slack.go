@@ -44,6 +44,10 @@ const (
 )
 
 func NewSlackNotification(fatimaRuntime fatima.FatimaRuntime, key string) *SlackNotification {
+	return NewSlackNotificationWithKey(fatimaRuntime, "default")
+}
+
+func NewSlackNotificationWithKey(fatimaRuntime fatima.FatimaRuntime, key string) *SlackNotification {
 	slack := SlackNotification{}
 	slack.fatimaRuntime = fatimaRuntime
 	slack.key = key
@@ -107,7 +111,7 @@ func (s *SlackNotification) isEventWritable() bool {
 	return true
 }
 
-func (s *SlackNotification) sendEvent(message string) {
+func (s *SlackNotification) SendEvent(message string) {
 	if !s.isEventWritable() {
 		return
 	}
