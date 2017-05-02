@@ -102,7 +102,7 @@ func (s *SlackNotification) isEventWritable() bool {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	deadline := time.Now().Add(-time.Minute)
-	if time.Now().Before(deadline) {
+	if s.lastLoadingTime.Before(deadline) {
 		s.loading()
 	}
 	if !s.config.Active || !s.config.Event || len(s.config.Url) < 6 {
@@ -133,8 +133,9 @@ func (s *SlackNotification) SendEvent(message string) {
 		log.Warn("fail to send slack notification : %s", err.Error())
 		return
 	}
+
 	defer resp.Body.Close()
-	log.Info("successfully send to slack : %s", message)
+	log.Info("successfully send to slack : %d %s", resp.StatusCode, resp.Status)
 }
 
 func buildAttachment(fatimaRuntime fatima.FatimaRuntime, message string) map[string]interface{} {
