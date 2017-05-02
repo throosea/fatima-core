@@ -128,7 +128,7 @@ func (s *SlackNotification) SendEvent(message string) {
 		return
 	}
 
-	resp, err := http.Post("http://example.com/upload", applicationJsonUtf8Value, bytes.NewReader(b))
+	resp, err := http.Post(s.config.Url, applicationJsonUtf8Value, bytes.NewReader(b))
 	if err != nil {
 		log.Warn("fail to send slack notification : %s", err.Error())
 		return
