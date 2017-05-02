@@ -135,7 +135,12 @@ func (s *SlackNotification) SendEvent(message string) {
 	}
 
 	defer resp.Body.Close()
-	log.Info("successfully send to slack : %d %s", resp.StatusCode, resp.Status)
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		log.Debug("successfully send to slack : %s", message)
+	} else {
+		log.Info("slack response : %s", resp.Status)
+	}
+
 }
 
 func buildAttachment(fatimaRuntime fatima.FatimaRuntime, message string) map[string]interface{} {
