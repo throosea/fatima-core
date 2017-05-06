@@ -32,7 +32,6 @@ type FatimaPkgProc interface {
 	GetName() string
 	GetHeartbeat() bool
 	GetPath() string
-	GetEffectivePath() string
 	GetGrep() string
 	GetLogLevel() log.LogLevel
 }

@@ -45,7 +45,6 @@ type ProcessItem struct {
 	Hb       bool   `yaml:"hb,omitempty"`
 	Path     string `yaml:"path,omitempty"`
 	Grep     string `yaml:"grep,omitempty"`
-	effectivePath string
 }
 
 func (p ProcessItem) GetGid() int {
@@ -64,12 +63,7 @@ func (p ProcessItem) GetPath() string {
 	return p.Path
 }
 
-func (p ProcessItem) GetEffectivePath() string {
-	return p.effectivePath
-}
-
 func (p ProcessItem) GetGrep() string {
-	//	return conf.ResolveBuiltin(v.Path)
 	return p.Grep
 }
 
@@ -89,10 +83,9 @@ type YamlFatimaPackageConfig struct {
 	Processes []ProcessItem `yaml:"process"`
 }
 
-func NewYamlFatimaPackageConfig(fatimaRuntime fatima.FatimaRuntime) *YamlFatimaPackageConfig {
+func NewYamlFatimaPackageConfig(env fatima.FatimaEnv) *YamlFatimaPackageConfig {
 	instance := new(YamlFatimaPackageConfig)
-	instance.env = fatimaRuntime.GetEnv()
-	instance.predefines = fatimaRuntime.GetConfig().(fatima.Predefines)
+	instance.env = env
 	instance.Reload()
 	return instance
 }
@@ -138,13 +131,6 @@ func (y *YamlFatimaPackageConfig) Reload() {
 
 	if len(y.Groups) == 0 || len(y.Processes) == 0 {
 		panic(fmt.Errorf("invalid fatima yaml configuration : %s", y.env.GetFolderGuide().GetPackageProcFile()))
-	}
-
-	for i:=0; i<len(y.Processes); i++ {
-		target := &y.Processes[i]
-		if len(target.Path) > 0 {
-			target.effectivePath = y.predefines.ResolvePredefine(target.Path)
-		}
 	}
 }
 

@@ -134,7 +134,7 @@ func (s *SlackNotification) SendEvent(message string) {
 }
 
 func sendEventToSlack(url string, b []byte, message string) {
-	resp, err := http.Post(url, applicationJsonUtf8Value, b)
+	resp, err := http.Post(url, applicationJsonUtf8Value, bytes.NewBuffer(b))
 	if err != nil {
 		log.Warn("fail to send slack notification : %s", err.Error())
 		return
