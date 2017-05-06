@@ -60,7 +60,6 @@ func readProperties(path string) (map[string]string, error) {
 
 	var line string
 	var idx int
-	//var pair []string
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line = strings.Trim(scanner.Text(), " ")
@@ -71,8 +70,6 @@ func readProperties(path string) (map[string]string, error) {
 		if idx > 0 {
 			if line[idx-1] == ' ' {
 				line = line[:idx]
-			} else if line[idx-1] != '\\' {
-				line = line[:idx]
 			}
 		}
 		idx = strings.Index(line, "=")
@@ -80,11 +77,6 @@ func readProperties(path string) (map[string]string, error) {
 			continue
 		}
 		resolved[line[:idx]] = line[idx+1:]
-		//pair = strings.Split(line, "=")
-		//if len(pair) != 2 {
-		//	continue
-		//}
-		//resolved[pair[0]] = pair[1]
 	}
 
 	return resolved, nil
