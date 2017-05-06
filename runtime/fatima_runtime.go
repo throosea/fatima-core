@@ -40,7 +40,7 @@ func GetFatimaRuntime() fatima.FatimaRuntime {
 	process = builder.NewFatimaRuntime()
 
 	// set builder
-	builder := getRuntimeBuilder(process.GetEnv())
+	builder := getRuntimeBuilder(process)
 	process.Initialize(builder)
 
 	// set interactor

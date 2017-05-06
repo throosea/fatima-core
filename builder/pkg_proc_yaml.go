@@ -89,9 +89,10 @@ type YamlFatimaPackageConfig struct {
 	Processes []ProcessItem `yaml:"process"`
 }
 
-func NewYamlFatimaPackageConfig(env fatima.FatimaEnv) *YamlFatimaPackageConfig {
+func NewYamlFatimaPackageConfig(fatimaRuntime fatima.FatimaRuntime) *YamlFatimaPackageConfig {
 	instance := new(YamlFatimaPackageConfig)
-	instance.env = env
+	instance.env = fatimaRuntime.GetEnv()
+	instance.predefines = fatimaRuntime.GetConfig().(fatima.Predefines)
 	instance.Reload()
 	return instance
 }
