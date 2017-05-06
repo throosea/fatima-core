@@ -69,7 +69,9 @@ func readProperties(path string) (map[string]string, error) {
 		}
 		idx = strings.Index(line, "#")
 		if idx > 0 {
-			line = line[:idx]
+			if line[idx-1] != '\\' {
+				line = line[:idx]
+			}
 		}
 		idx = strings.Index(line, "=")
 		if idx < 1 {
