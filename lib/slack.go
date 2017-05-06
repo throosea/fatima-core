@@ -128,7 +128,13 @@ func (s *SlackNotification) SendEvent(message string) {
 		return
 	}
 
-	resp, err := http.Post(s.config.Url, applicationJsonUtf8Value, bytes.NewReader(b))
+	go func()	{
+		sendEventToSlack(s.config.Url, b, message)
+	}()
+}
+
+func sendEventToSlack(url string, b []byte, message string) {
+	resp, err := http.Post(url, applicationJsonUtf8Value, b)
 	if err != nil {
 		log.Warn("fail to send slack notification : %s", err.Error())
 		return
@@ -140,7 +146,6 @@ func (s *SlackNotification) SendEvent(message string) {
 	} else {
 		log.Info("slack response : %s", resp.Status)
 	}
-
 }
 
 func buildAttachment(fatimaRuntime fatima.FatimaRuntime, message string) map[string]interface{} {

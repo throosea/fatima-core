@@ -65,3 +65,13 @@ func (this *PropertyConfigReader) GetValue(key string) (string, bool) {
 	v, ok := this.configuration[key]
 	return v, ok
 }
+
+func (this *PropertyConfigReader) ResolvePredefine(value string) string {
+	return this.predefines.ResolvePredefine(value)
+}
+
+func (this *PropertyConfigReader) GetDefine(key string) (string, bool) {
+	return this.predefines.GetDefine(key)
+}
+
+
