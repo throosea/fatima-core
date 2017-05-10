@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "7aVQHxIZZYAb+Tq0pbGLL8j+4cM=",
+			"path": "github.com/robfig/cron",
+			"revision": "df38d32658d8788cd446ba74db4bb5375c4b0cb3",
+			"revisionTime": "2017-03-09T13:24:18Z"
+		},
+		{
 			"checksumSHA1": "0KwOlQV1dNUh9X8t+5s7nX5bqfk=",
 			"path": "gopkg.in/yaml.v2",
 			"revision": "a3f3340b5840cee44f372bddb5880fcbc419b46a",
