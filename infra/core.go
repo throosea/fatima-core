@@ -70,13 +70,16 @@ func NewProcessInteractor(runtimeProcess *builder.FatimaRuntimeProcess) *Default
 func (this *DefaultProcessInteractor) Regist(component fatima.FatimaComponent) {
 	registComponent(component)
 
-	switch component.(type) {
-	case monitor.FatimaSystemHAAware:
-		this.RegistSystemHAAware(component.(monitor.FatimaSystemHAAware))
-	case monitor.FatimaSystemPSAware:
-		this.RegistSystemPSAware(component.(monitor.FatimaSystemPSAware))
-	case fatima.FatimaIOReader:
-		this.readers = append(this.readers, component.(fatima.FatimaIOReader))
+	if comp, ok := component.(monitor.FatimaSystemHAAware); ok {
+		this.RegistSystemHAAware(comp)
+	}
+
+	if comp, ok := component.(monitor.FatimaSystemPSAware); ok {
+		this.RegistSystemPSAware(comp)
+	}
+
+	if comp, ok := component.(fatima.FatimaIOReader); ok {
+		this.readers = append(this.readers, comp)
 	}
 }
 
