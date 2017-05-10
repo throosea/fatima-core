@@ -39,12 +39,13 @@ import (
 )
 
 type ProcessItem struct {
-	Gid      int    `yaml:"gid"`
-	Name     string `yaml:"name"`
-	Loglevel string `yaml:"loglevel"`
-	Hb       bool   `yaml:"hb,omitempty"`
-	Path     string `yaml:"path,omitempty"`
-	Grep     string `yaml:"grep,omitempty"`
+	Gid      	int    `yaml:"gid"`
+	Name     	string `yaml:"name"`
+	Loglevel 	string `yaml:"loglevel"`
+	Hb       	bool   `yaml:"hb,omitempty"`
+	Path     	string `yaml:"path,omitempty"`
+	Grep     	string `yaml:"grep,omitempty"`
+	Startmode	int		`yaml:"startmode,omitempty"`
 }
 
 func (p ProcessItem) GetGid() int {
@@ -65,6 +66,15 @@ func (p ProcessItem) GetPath() string {
 
 func (p ProcessItem) GetGrep() string {
 	return p.Grep
+}
+
+func (p ProcessItem) GetStartMode() fatima.ProcessStartMode {
+	switch p.Startmode  {
+	case 1 :		return fatima.StartModeAlone
+	case 2 :		return fatima.StartModeByHA
+	case 3 :		return fatima.StartModeByPS
+	default : 		return fatima.StartModeByJuno
+	}
 }
 
 func (p ProcessItem) GetLogLevel() log.LogLevel {
@@ -110,7 +120,8 @@ func (y *YamlFatimaPackageConfig) Save() {
 		"# group (define column)\n" +
 		"# process list (define column)\n" +
 		"#  gid, name, path, qclear, qkey, hb\n" +
-		"# non-fatima process\n"
+		"# non-fatima process\n" +
+		"# startmode : 0(always started by juno), 1(not started by juno), 2(by HA), 3(by PS)\n"
 
 	var buff bytes.Buffer
 	buff.WriteString(comment)

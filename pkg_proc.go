@@ -27,6 +27,17 @@ import (
 	log "throosea.com/log"
 )
 
+
+// log levels
+const (
+	StartModeByJuno = 0
+	StartModeAlone = 1
+	StartModeByHA = 2
+	StartModeByPS = 3
+)
+
+type ProcessStartMode int
+
 type FatimaPkgProc interface {
 	GetGid() int
 	GetName() string
@@ -34,6 +45,7 @@ type FatimaPkgProc interface {
 	GetPath() string
 	GetGrep() string
 	GetLogLevel() log.LogLevel
+	GetStartMode() ProcessStartMode
 }
 
 type FatimaPkgProcConfig interface {
