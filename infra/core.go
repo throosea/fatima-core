@@ -30,6 +30,7 @@ import (
 	"time"
 	"net/http"
 	"throosea.com/log"
+	"throosea.com/fatima/lib"
 )
 
 type ProcessCoreWorker interface {
@@ -106,6 +107,7 @@ func (this *DefaultProcessInteractor) startListening() {
 
 func (this *DefaultProcessInteractor) Run() {
 	this.startListening()
+	lib.StartCron()
 	bootupNotify()
 
 	addr, ok := this.runtimeProcess.GetConfig().GetValue(builder.GOFATIMA_PROP_PPROF_ADDRESS)
@@ -125,6 +127,7 @@ func (this *DefaultProcessInteractor) Stop() {
 
 func (this *DefaultProcessInteractor) Shutdown() {
 	this.runtimeProcess.GetSystemNotifyHandler().SendAlarm("프로세스가 중지 되었습니다")
+	lib.StopCron()
 	shutdownComponent(this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
 }
 

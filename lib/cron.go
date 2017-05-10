@@ -48,6 +48,8 @@ var (
 	cron 				*robfig_cron.Cron
 	cronJobList			[]*CronJob = make([]*CronJob, 0)
 	fatimaRuntime		fatima.FatimaRuntime
+	oneSecondTick		*time.Ticker
+	lastRerunModifiedTime time.Time
 
 	errInvalidConfig = errors.New("invalid fatima config")
 )
@@ -80,11 +82,17 @@ func StartCron() {
 		return
 	}
 
+	log.Info("total %d cron jobs scheduled", len(cron.Entries()))
 	cron.Start()
 }
 
 func StopCron() {
 	cron.Stop()
+	if oneSecondTick != nil {
+		oneSecondTick.Stop()
+		oneSecondTick = nil
+		log.Info("cron jobs stopped")
+	}
 }
 
 func Rerun(jobName string)	{
@@ -158,15 +166,13 @@ func clearRerunFile() {
 }
 
 func startRerunFileScanner() {
-	oneSecondTick := time.NewTicker(time.Second * 1)
+	oneSecondTick = time.NewTicker(time.Second * 1)
 	go func() {
 		for range oneSecondTick.C {
 			scanRerunFile()
 		}
 	}()
 }
-
-var lastRerunModifiedTime time.Time
 
 func scanRerunFile() {
 	file := filepath.Join(fatimaRuntime.GetEnv().GetFolderGuide().GetDataFolder(), fileRerun)
