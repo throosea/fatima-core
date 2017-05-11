@@ -224,6 +224,8 @@ func scanRerunFile() {
 	}
 
 	jobName := strings.Trim(string(data), "\r\n ")
-	Rerun(jobName)
+	if len(jobName) > 0 {
+		Rerun(jobName)
+	}
 }
 
