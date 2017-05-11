@@ -109,15 +109,7 @@ func (this *DefaultProcessInteractor) Run() {
 	this.startListening()
 	lib.StartCron()
 	bootupNotify()
-
-	addr, ok := this.runtimeProcess.GetConfig().GetValue(builder.GOFATIMA_PROP_PPROF_ADDRESS)
-	if ok {
-		// pprof 포트 설정이 되었을 경우 ...
-		go func() {
-			http.ListenAndServe(addr, nil)
-		}()
-		log.Info("pprof 서비스를 시작합니다. address=%s", addr)
-	}
+	this.pprofService()
 	this.runtimeProcess.GetSystemNotifyHandler().SendAlarm("프로세스가 시작 되었습니다")
 }
 
@@ -133,6 +125,18 @@ func (this *DefaultProcessInteractor) Shutdown() {
 
 func (this *DefaultProcessInteractor) RegistMeasureUnit(unit monitor.SystemMeasurable) {
 	this.measurement.registUnit(unit)
+}
+
+
+func (this *DefaultProcessInteractor) pprofService() {
+	addr, ok := this.runtimeProcess.GetConfig().GetValue(builder.GOFATIMA_PROP_PPROF_ADDRESS)
+	if ok {
+		// pprof 포트 설정이 되었을 경우 ...
+		go func() {
+			http.ListenAndServe(addr, nil)
+		}()
+		log.Info("pprof 서비스를 시작합니다. address=%s", addr)
+	}
 }
 
 func startTickers() {

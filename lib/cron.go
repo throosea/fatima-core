@@ -78,6 +78,10 @@ func (c CronJob) Run() {
 
 
 func StartCron() {
+	if cron == nil {
+		return
+	}
+
 	if len(cron.Entries()) == 0 {
 		return
 	}
@@ -87,6 +91,10 @@ func StartCron() {
 }
 
 func StopCron() {
+	if cron == nil {
+		return
+	}
+
 	cron.Stop()
 	if oneSecondTick != nil {
 		oneSecondTick.Stop()
