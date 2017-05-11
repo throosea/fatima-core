@@ -57,6 +57,7 @@ import (
 	"os"
 	"time"
 	"io/ioutil"
+	"strings"
 )
 
 const (
@@ -222,6 +223,7 @@ func scanRerunFile() {
 		return
 	}
 
-	Rerun(string(data))
+	jobName := strings.Trim(string(data), "\r\n ")
+	Rerun(jobName)
 }
 
