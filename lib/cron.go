@@ -21,6 +21,29 @@
 // @date 2017. 5. 11. AM 8:50
 //
 
+/*
+Field name   | Mandatory? | Allowed values  | Allowed special characters
+----------   | ---------- | --------------  | --------------------------
+Seconds      | Yes        | 0-59            | * / , -
+Minutes      | Yes        | 0-59            | * / , -
+Hours        | Yes        | 0-23            | * / , -
+Day of month | Yes        | 1-31            | * / , - ?
+Month        | Yes        | 1-12 or JAN-DEC | * / , -
+Day of week  | Yes        | 0-6 or SUN-SAT  | * / , - ?
+
+c.AddFunc("0 30 * * * *", func() { fmt.Println("Every hour on the half hour") })
+c.AddFunc("@hourly",      func() { fmt.Println("Every hour") })
+c.AddFunc("@every 1h30m", func() { fmt.Println("Every hour thirty") })
+
+Entry                  | Description                                | Equivalent To
+-----                  | -----------                                | -------------
+@yearly (or @annually) | Run once a year, midnight, Jan. 1st        | 0 0 0 1 1 *
+@monthly               | Run once a month, midnight, first of month | 0 0 0 1 * *
+@weekly                | Run once a week, midnight on Sunday        | 0 0 0 * * 0
+@daily (or @midnight)  | Run once a day, midnight                   | 0 0 0 * * *
+@hourly                | Run once an hour, beginning of hour        | 0 0 * * * *
+*/
+
 package lib
 
 import (
@@ -73,7 +96,7 @@ func (c CronJob) Run() {
 	c.runnable(fatimaRuntime)
 	endMillis := CurrentTimeMillis()
 
-	log.Info("cron job [%s] elapsed %s milli seconds", c.name, endMillis - startMillis)
+	log.Info("cron job [%s] elapsed %d milli seconds", c.name, endMillis - startMillis)
 }
 
 
