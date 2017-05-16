@@ -64,7 +64,7 @@ func initializeComponent() (res bool) {
 			log.Warn("**PANIC** while initializing", errors.New(fmt.Sprintf("%s", r)))
 			return
 		}
-		res = true
+		//res = true
 	}()
 
 	if !callInitial(compPreInit) {
