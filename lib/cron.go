@@ -131,7 +131,9 @@ func Rerun(jobName string)	{
 	log.Info("try to rerun job [%s]", jobName)
 	for _, job := range cronJobList {
 		if job.name == jobName {
-			job.Run()
+			go func() {
+				job.Run()
+			} ()
 			return
 		}
 	}
@@ -226,6 +228,7 @@ func scanRerunFile() {
 	jobName := strings.Trim(string(data), "\r\n ")
 	if len(jobName) > 0 {
 		Rerun(jobName)
+		clearRerunFile()
 	}
 }
 
