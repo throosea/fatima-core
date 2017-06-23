@@ -82,7 +82,8 @@ type CronJob struct {
 	name			string
 	desc			string
 	spec			string
-	runnable		func(fatima.FatimaRuntime)
+	args			[]string
+	runnable		func(fatima.FatimaRuntime, ...string)
 }
 
 func (c CronJob) Run() {
@@ -94,7 +95,7 @@ func (c CronJob) Run() {
 	}()
 
 	startMillis := CurrentTimeMillis()
-	c.runnable(fatimaRuntime)
+	c.runnable(fatimaRuntime, c.args...)
 	endMillis := CurrentTimeMillis()
 
 	log.Info("cron job [%s] elapsed %d milli seconds", c.name, endMillis - startMillis)
@@ -127,11 +128,14 @@ func StopCron() {
 	}
 }
 
-func Rerun(jobName string)	{
-	log.Info("try to rerun job [%s]", jobName)
+func Rerun(jobDescription string)	{
+	log.Info("try to rerun job [%s]", jobDescription)
+	jobArgs := strings.Split(jobDescription, " ")
+	jobName := jobArgs[0]
 	for _, job := range cronJobList {
 		if job.name == jobName {
 			go func() {
+				job.args = jobArgs[1:]
 				job.Run()
 			} ()
 			return
@@ -139,7 +143,7 @@ func Rerun(jobName string)	{
 	}
 }
 
-func RegistCronJob(runtime fatima.FatimaRuntime, jobName string, runnable func(fatima.FatimaRuntime)) error {
+func RegistCronJob(runtime fatima.FatimaRuntime, jobName string, runnable func(fatima.FatimaRuntime, ...string)) error {
 	if runtime.GetConfig() == nil {
 		return errInvalidConfig
 	}
@@ -173,7 +177,7 @@ func ensureSingleCronInstance(runtime fatima.FatimaRuntime) {
 	cronCreationLock.Unlock()
 }
 
-func newCronJob(config fatima.Config, name string, runnable func(fatima.FatimaRuntime)) (*CronJob, error) {
+func newCronJob(config fatima.Config, name string, runnable func(fatima.FatimaRuntime, ...string)) (*CronJob, error) {
 	specKey := fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixSpec)
 	spec, ok := config.GetValue(specKey)
 	if !ok {
