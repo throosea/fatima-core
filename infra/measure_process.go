@@ -42,6 +42,7 @@ func (this *ProcessMeasurement) GetKeyName() string {
 	return "fatima process"
 }
 
+var lastGcCount uint32
 func (this *ProcessMeasurement) GetMeasure() string {
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
@@ -53,13 +54,25 @@ func (this *ProcessMeasurement) GetMeasure() string {
 			mem.NumGC)
 	}
 
-	// nanoseconds since 1970
-	// time.Unix(0, nanos)
-	return fmt.Sprintf(" :: Alloc=%s, TotalAlloc=%s, Sys=%s, NumGC=%d, LastPause=%dNs, LastGC=%s",
+	pauseMs := 0
+	if lastGcCount != mem.NumGC {
+		pauseMs = int(mem.PauseNs[(mem.NumGC+255)%256] / 1000)
+		lastGcCount = mem.NumGC
+	}
+
+	//return fmt.Sprintf(" :: Alloc=%s, TotalAlloc=%s, Sys=%s, TotalGC=%d, LastPause=%dms, LastGC=%s",
+	//	expressBytes(mem.Alloc),
+	//	expressBytes(mem.TotalAlloc),
+	//	expressBytes(mem.Sys),
+	//	mem.NumGC,
+	//	pauseMs,
+	//	time.Unix(0, int64(mem.LastGC)).Format("2006-01-02 15:04:05"))
+
+	return fmt.Sprintf(" :: Alloc=%s, Sys=%s, TotalGC=%d, LastPause=%dms, LastGC=%s",
 		expressBytes(mem.Alloc),
-		expressBytes(mem.TotalAlloc),
+		//expressBytes(mem.TotalAlloc),
 		expressBytes(mem.Sys),
 		mem.NumGC,
-		mem.PauseNs[(mem.NumGC+255)%256],
+		pauseMs,
 		time.Unix(0, int64(mem.LastGC)).Format("2006-01-02 15:04:05"))
 }
