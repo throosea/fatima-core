@@ -137,6 +137,7 @@ func Rerun(jobDescription string)	{
 			go func() {
 				job.args = jobArgs[1:]
 				job.Run()
+				job.args = nil
 			} ()
 			return
 		}
