@@ -133,7 +133,10 @@ func (this *DefaultProcessInteractor) pprofService() {
 	if ok {
 		// pprof 포트 설정이 되었을 경우 ...
 		go func() {
-			http.ListenAndServe(addr, nil)
+			err := http.ListenAndServe(addr, http.DefaultServeMux)
+			if err != nil {
+				log.Warn("fail to start pprof service : {}", err.Error())
+			}
 		}()
 		log.Info("pprof 서비스를 시작합니다. address=%s", addr)
 	}
