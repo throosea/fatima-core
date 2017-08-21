@@ -73,6 +73,11 @@ type SlackConfig struct {
 
 func (s *SlackNotification) loading()	{
 	s.lastLoadingTime = time.Now()
+	if s.fatimaRuntime == nil {
+		log.Warn("fatimaRuntime is nil")
+		return
+	}
+
 	webhookConfigFile := filepath.Join(s.fatimaRuntime.GetEnv().GetFolderGuide().GetDataFolder(), fileWebhookSlack)
 	dataBytes, err := ioutil.ReadFile(webhookConfigFile)
 	if err != nil {
