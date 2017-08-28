@@ -57,10 +57,21 @@ func (this *DefaultProcessBuilder) GetSystemAware() monitor.FatimaSystemAware {
 	return this.systemAware
 }
 
-func getRuntimeBuilder(env fatima.FatimaEnv) builder.FatimaRuntimeBuilder {
+func getRuntimeBuilder(env fatima.FatimaEnv, processType fatima.FatimaProcessType) builder.FatimaRuntimeBuilder {
+	if processType == fatima.PROCESS_TYPE_GENERAL {
+		processBuilder := new(DefaultProcessBuilder)
+
+		processBuilder.pkgProcConfig = builder.NewYamlFatimaPackageConfig(env)
+		processBuilder.predefines = builder.NewPropertyPredefineReader(env)
+		processBuilder.config = builder.NewPropertyConfigReader(env, processBuilder.predefines)
+
+		return processBuilder
+	}
+
+	// USER INTERACTIVE
 	processBuilder := new(DefaultProcessBuilder)
 
-	processBuilder.pkgProcConfig = builder.NewYamlFatimaPackageConfig(env)
+	processBuilder.pkgProcConfig = builder.NewDummyFatimaPackageConfig(env)
 	processBuilder.predefines = builder.NewPropertyPredefineReader(env)
 	processBuilder.config = builder.NewPropertyConfigReader(env, processBuilder.predefines)
 

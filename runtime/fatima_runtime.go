@@ -32,6 +32,11 @@ import (
 var process *builder.FatimaRuntimeProcess
 
 func GetFatimaRuntime() fatima.FatimaRuntime {
+	return GetGeneralFatimaRuntime()
+}
+
+
+func GetGeneralFatimaRuntime() fatima.FatimaRuntime {
 	if process != nil {
 		return process
 	}
@@ -40,7 +45,26 @@ func GetFatimaRuntime() fatima.FatimaRuntime {
 	process = builder.NewFatimaRuntime()
 
 	// set builder
-	builder := getRuntimeBuilder(process.GetEnv())
+	builder := getRuntimeBuilder(process.GetEnv(), fatima.PROCESS_TYPE_GENERAL)
+	process.Initialize(builder)
+
+	// set interactor
+	process.SetInteractor(infra.NewProcessInteractor(process))
+
+	return process
+}
+
+
+func GetUserInteractiveFatimaRuntime() fatima.FatimaRuntime {
+	if process != nil {
+		return process
+	}
+
+	// prepare process
+	process = builder.NewFatimaRuntime()
+
+	// set builder
+	builder := getRuntimeBuilder(process.GetEnv(), fatima.PROCESS_TYPE_UI)
 	process.Initialize(builder)
 
 	// set interactor

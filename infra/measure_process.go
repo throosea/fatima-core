@@ -60,14 +60,6 @@ func (this *ProcessMeasurement) GetMeasure() string {
 		lastGcCount = mem.NumGC
 	}
 
-	//return fmt.Sprintf(" :: Alloc=%s, TotalAlloc=%s, Sys=%s, TotalGC=%d, LastPause=%dms, LastGC=%s",
-	//	expressBytes(mem.Alloc),
-	//	expressBytes(mem.TotalAlloc),
-	//	expressBytes(mem.Sys),
-	//	mem.NumGC,
-	//	pauseMs,
-	//	time.Unix(0, int64(mem.LastGC)).Format("2006-01-02 15:04:05"))
-
 	return fmt.Sprintf(" :: Alloc=%s, Sys=%s, TotalGC=%d, LastPause=%dms, LastGC=%s",
 		expressBytes(mem.Alloc),
 		//expressBytes(mem.TotalAlloc),

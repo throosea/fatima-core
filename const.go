@@ -34,3 +34,10 @@ const (
 	ENV_FATIMA_PASSWORD = "FATIMA_PASSWORD"
 	ENV_FATIMA_TIMEZONE = "FATIMA_TIMEZONE"
 )
+
+type FatimaProcessType int
+
+const (
+	PROCESS_TYPE_GENERAL = 1 << iota
+	PROCESS_TYPE_UI
+)

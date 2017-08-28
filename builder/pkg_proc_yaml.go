@@ -100,14 +100,6 @@ func NewYamlFatimaPackageConfig(env fatima.FatimaEnv) *YamlFatimaPackageConfig {
 	return instance
 }
 
-/*
-d, err := yaml.Marshal(&t)
-if err != nil {
-log.Fatalf("error: %v", err)
-}
-
-*/
-
 func (y *YamlFatimaPackageConfig) Save() {
 	d, err := yaml.Marshal(y)
 	if err != nil {
@@ -228,3 +220,34 @@ func buildLogLevel(s string) log.LogLevel {
 	}
 	return log.LOG_TRACE
 }
+
+
+
+type DummyFatimaPackageConfig struct {
+	env       fatima.FatimaEnv
+	predefines fatima.Predefines
+	Groups    []GroupItem   `yaml:"group,flow"`
+	Processes []ProcessItem `yaml:"process"`
+}
+
+func NewDummyFatimaPackageConfig(env fatima.FatimaEnv) *DummyFatimaPackageConfig {
+	instance := new(DummyFatimaPackageConfig)
+	instance.env = env
+	instance.Reload()
+	return instance
+}
+
+func (y *DummyFatimaPackageConfig) Reload() {
+}
+
+func (y *DummyFatimaPackageConfig) GetProcByName(name string) fatima.FatimaPkgProc {
+	item := ProcessItem{}
+	item.Name = name
+	item.Startmode = fatima.StartModeAlone
+	item.Path = "/"
+	item.Gid = 0
+	item.Hb = false
+	item.Loglevel = "debug"
+	return item
+}
+
