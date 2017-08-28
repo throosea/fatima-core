@@ -85,6 +85,7 @@ type FatimaRuntimeBuilder interface {
 	GetPkgProcConfig() fatima.FatimaPkgProcConfig
 	GetPredefines() fatima.Predefines
 	GetConfig() fatima.Config
+	GetProcessType() fatima.FatimaProcessType
 }
 
 type FatimaPackaging struct {
@@ -270,7 +271,7 @@ func (process *FatimaRuntimeProcess) Initialize(builder FatimaRuntimeBuilder)  {
 		log.Info("로그레벨을 변경합니다 : %s", process.logLevel)
 	}
 
-	process.parepareProcFolder(pkgProc)
+	process.parepareProcFolder(pkgProc, builder.GetProcessType())
 	process.status = proc_status_ready
 }
 
@@ -328,7 +329,7 @@ func (process *FatimaRuntimeProcess) getThisPkgProc() fatima.FatimaPkgProc {
 	return fatimaProc
 }
 
-func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgProc) {
+func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgProc, processType fatima.FatimaProcessType) {
 	procFolder := process.env.GetFolderGuide().GetAppProcFolder()
 
 	// remove old output files
@@ -348,15 +349,17 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 	err := ioutil.WriteFile(filepath.Join(procFolder, process.env.GetSystemProc().GetProgramName()+".pid"), pid, 0644)
 	check(err)
 
-	// redirect output to file
-	outfile, err := os.Create(
-		filepath.Join(
-			procFolder,
-			fmt.Sprintf("%s.%d.output", process.env.GetSystemProc().GetProgramName(), process.env.GetSystemProc().GetPid())))
-	check(err)
+	if processType == fatima.PROCESS_TYPE_GENERAL {
+		// redirect output to file
+		outfile, err := os.Create(
+			filepath.Join(
+				procFolder,
+				fmt.Sprintf("%s.%d.output", process.env.GetSystemProc().GetProgramName(), process.env.GetSystemProc().GetPid())))
+		check(err)
 
-	os.Stdout = outfile
-	os.Stderr = outfile
+		os.Stdout = outfile
+		os.Stderr = outfile
+	}
 }
 
 func init() {
