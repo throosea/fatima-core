@@ -58,8 +58,8 @@ func (ui *UserInteractive) Initialize() bool {
 			// If we just read a StartElement token
 			inElement = se.Name.Local
 			// ...and its name is "page"
-			if inElement == "common" {
-				fmt.Printf("found inElement - common\n")
+			if inElement == "prompt" {
+				fmt.Printf("found inElement - prompt\n")
 			}
 		default:
 		}
