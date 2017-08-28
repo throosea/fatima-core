@@ -21,6 +21,7 @@ import (
 	"os"
 	"fmt"
 	"encoding/xml"
+	"throosea.com/log"
 )
 
 type UserInteractive struct {
@@ -34,12 +35,11 @@ func newUserInteractive() *UserInteractive {
 func (ui *UserInteractive) Initialize() bool {
 	inputFile := filepath.Join(
 		process.GetEnv().GetFolderGuide().GetAppFolder(),
-		process.GetEnv().GetSystemProc().GetProgramName(),
 		process.GetEnv().GetSystemProc().GetProgramName() + ".ui.xml")
 
 	xmlFile, err := os.Open(inputFile)
 	if err != nil {
-		fmt.Printf("fail to load user interactive xml file : %s", err.Error())
+		log.Error("fail to load user interactive xml file : %s", err.Error())
 		return false
 	}
 
