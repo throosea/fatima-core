@@ -55,7 +55,7 @@ func GetGeneralFatimaRuntime() fatima.FatimaRuntime {
 }
 
 
-func GetUserInteractiveFatimaRuntime() fatima.FatimaRuntime {
+func GetUserInteractiveFatimaRuntime(controller interface{}) fatima.FatimaRuntime {
 	if process != nil {
 		return process
 	}
@@ -71,7 +71,7 @@ func GetUserInteractiveFatimaRuntime() fatima.FatimaRuntime {
 	process.SetInteractor(infra.NewProcessInteractor(process))
 
 	// regist user interactive
-	process.Regist(newUserInteractive())
+	process.Regist(newUserInteractive(controller))
 
 	return process
 }
