@@ -77,6 +77,8 @@ func (u *UserInteractionSet) start() {
 			break
 		}
 	}
+
+	// send sigkill
 	syscall.Kill(syscall.Getpid(), syscall.SIGKILL)
 }
 
