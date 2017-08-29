@@ -80,6 +80,7 @@ func (u *UserInteractionSet) start() {
 	syscall.Kill(syscall.Getpid(), syscall.SIGKILL)
 }
 
+// prepare Method
 func (u *UserInteractionSet) prepareMethod(funcName string) error  {
 	u.lastExecutions = nil
 	u.lastExecutions = make([]reflect.Value, 0)
