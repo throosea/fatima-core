@@ -329,6 +329,9 @@ func askParameters(stage Stage)	([]string, bool) 	{
 			if a == COMMAND_COMMON_QUIT {
 				return answer, false
 			}
+			if len(a) == 0 {
+				a = v.Default
+			}
 			answer = append(answer, a)
 		} else {
 			fmt.Printf("fail to scan user input...\n")
