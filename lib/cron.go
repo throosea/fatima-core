@@ -83,7 +83,7 @@ type CronJob struct {
 	desc			string
 	spec			string
 	args			[]string
-	runnable		func(fatima.FatimaRuntime, ...string)
+	runnable		func(string, fatima.FatimaRuntime, ...string)
 }
 
 func (c CronJob) Run() {
@@ -95,7 +95,7 @@ func (c CronJob) Run() {
 	}()
 
 	startMillis := CurrentTimeMillis()
-	c.runnable(fatimaRuntime, c.args...)
+	c.runnable(c.name, fatimaRuntime, c.args...)
 	endMillis := CurrentTimeMillis()
 
 	log.Info("cron job [%s] elapsed %d milli seconds", c.name, endMillis - startMillis)
