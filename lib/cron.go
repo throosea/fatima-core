@@ -144,7 +144,7 @@ func Rerun(jobDescription string)	{
 	}
 }
 
-func RegistCronJob(runtime fatima.FatimaRuntime, jobName string, runnable func(fatima.FatimaRuntime, ...string)) error {
+func RegistCronJob(runtime fatima.FatimaRuntime, jobName string, runnable func(string, fatima.FatimaRuntime, ...string)) error {
 	if runtime.GetConfig() == nil {
 		return errInvalidConfig
 	}
@@ -178,7 +178,7 @@ func ensureSingleCronInstance(runtime fatima.FatimaRuntime) {
 	cronCreationLock.Unlock()
 }
 
-func newCronJob(config fatima.Config, name string, runnable func(fatima.FatimaRuntime, ...string)) (*CronJob, error) {
+func newCronJob(config fatima.Config, name string, runnable func(string, fatima.FatimaRuntime, ...string)) (*CronJob, error) {
 	specKey := fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixSpec)
 	spec, ok := config.GetValue(specKey)
 	if !ok {
