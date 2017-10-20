@@ -95,7 +95,7 @@ func (c CronJob) Run() {
 	}()
 
 	startMillis := CurrentTimeMillis()
-	c.runnable(c.name, fatimaRuntime, c.args...)
+	c.runnable(c.desc, fatimaRuntime, c.args...)
 	endMillis := CurrentTimeMillis()
 
 	log.Info("cron job [%s] elapsed %d milli seconds", c.name, endMillis - startMillis)
