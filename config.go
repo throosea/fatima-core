@@ -32,6 +32,9 @@ type Predefines interface {
 
 type Config interface {
 	GetValue(key string) (string, bool)
+	GetString(key string) (string, error)
+	GetInt(key string) (int, error)
+	GetBool(key string) (bool, error)
 }
 
 type Packaging interface {

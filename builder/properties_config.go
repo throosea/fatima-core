@@ -28,6 +28,8 @@ import (
 	"path/filepath"
 	"throosea.com/fatima"
 	"throosea.com/log"
+	"strconv"
+	"strings"
 )
 
 type PropertyConfigReader struct {
@@ -65,6 +67,47 @@ func (this *PropertyConfigReader) GetValue(key string) (string, bool) {
 	v, ok := this.configuration[key]
 	return v, ok
 }
+
+func (this *PropertyConfigReader) GetString(key string) (string, error) {
+	v, ok := this.configuration[key]
+	if !ok {
+		return "", fmt.Errorf("not found key in config : %s", key)
+	}
+	return v, nil
+}
+
+
+func (this *PropertyConfigReader) GetInt(key string) (int, error) {
+	v, ok := this.configuration[key]
+	if !ok {
+		return 0, fmt.Errorf("not found key in config : %s", key)
+	}
+
+	i, err := strconv.Atoi(v)
+	if err != nil {
+		return 0, fmt.Errorf("not numeric value for key %s : %s", key, err.Error())
+	}
+
+	return i, nil
+}
+
+
+func (this *PropertyConfigReader) GetBool(key string) (bool, error) {
+	v, ok := this.configuration[key]
+	if !ok {
+		return false, fmt.Errorf("not found key in config : %s", key)
+	}
+
+	switch strings.ToUpper(v) {
+	case "TRUE" :
+		return true, nil
+	}
+
+	return false, nil
+}
+
+
+
 
 func (this *PropertyConfigReader) ResolvePredefine(value string) string {
 	return this.predefines.ResolvePredefine(value)
