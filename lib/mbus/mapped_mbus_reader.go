@@ -102,11 +102,17 @@ func (m *MappedMBusReader) collectionCleaning()	{
 	defer m.mutex.Unlock()
 
 	initial := len(m.streamRecords)
-	log.Debug("start collection cleaning. initial=%d", initial)
+	log.Info("start collection cleaning. initial=%d", initial)
+	test := 0
 	for true {
 		removed := searchRetiredRecord(m.streamRecords)
 		if removed >= 0 {
 			m.streamRecords = append(m.streamRecords[:removed], m.streamRecords[removed+1:]...)
+			log.Info("after removed : %d", len(m.streamRecords))
+		}
+		test++
+		if test > 9 {
+			break
 		}
 	}
 
@@ -127,6 +133,7 @@ func searchRetiredRecord(list []*StreamRecord) int	{
 		}
 	}
 
+	log.Info("not found...")
 	return -1
 }
 
