@@ -53,7 +53,6 @@ func NewMappedMBusReader(path string, collection string) (*MappedMBusReader, err
 		log.Info("[%s] %v", v.GetProducerName(), v.GetWriteCoordinates())
 	}
 
-	m.xy = m.record.GetWriteCoordinates()
 	return &m, nil
 }
 
