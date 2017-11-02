@@ -27,9 +27,8 @@ import (
 type MappedMBusReader struct {
 	collection 	string
 	dir        	string
-	record     *StreamRecord
+	streamSet	map[string]*StreamData
 	streamList	[]*StreamRecord
-	data       *StreamData
 	xy			Coordinates
 	mutex 		*sync.Mutex
 }
@@ -49,23 +48,23 @@ func NewMappedMBusReader(path string, collection string) (*MappedMBusReader, err
 
 	m.streamList = coll
 
-	for _, v := range m.streamList {
-		log.Info("[%s] %v", v.GetProducerName(), v.GetWriteCoordinates())
-	}
+	loadStreamSet(&m)
+
+	log.Info("total %d stream data loaded", len(m.streamSet))
 
 	return &m, nil
 }
 
 
 func (m *MappedMBusReader) Close() error {
-	if m.record != nil {
-		m.record.Close()
-		m.record = nil
+	for _, v := range m.streamList {
+		v.Close()
 	}
-	if m.data != nil {
-		m.data.Close()
-		m.data = nil
+
+	for _, v := range m.streamSet {
+		v.Close()
 	}
+
 	return nil
 }
 
@@ -108,4 +107,33 @@ func loadCollections(mreader *MappedMBusReader) ([]*StreamRecord, error) {
 
 	log.Info("total %d stream loaded to collection", len(coll))
 	return coll, nil
+}
+
+func loadStreamSet(mreader *MappedMBusReader)	{
+	mreader.streamSet = make(map[string]*StreamData)
+
+	for _, v := range mreader.streamList {
+		data, err := loadStreamData(mreader.dir, mreader.collection, v)
+		if err != nil {
+			log.Error("fail to load stream[%s] data : %s", v.GetProducerName(), err.Error())
+			continue
+		}
+		mreader.streamSet[v.GetProducerName()] = data
+	}
+}
+
+func loadStreamData(dir string, collection string, stream *StreamRecord) (*StreamData, error) {
+	xy := stream.GetReadCoordinates()
+	file := fmt.Sprintf("%s.%s.%d", collection, stream.GetProducerName(), xy.sequence)
+	path := filepath.Join(dir, file)
+
+	m, err := lib.NewMmap(path, streamDataFileSize)
+	if err != nil {
+		return nil, err
+	}
+
+	data := new(StreamData)
+	data.mmap = m
+
+	return data, nil
 }

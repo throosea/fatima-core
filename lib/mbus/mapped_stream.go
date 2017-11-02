@@ -122,6 +122,15 @@ func (r *StreamRecord) GetWriteCoordinates() Coordinates {
 	return c
 }
 
+func (r *StreamRecord) GetReadCoordinates() Coordinates {
+	c := Coordinates{}
+	v, _ := r.mmap.ReadUint32(r.baseline + 28)
+	c.sequence = v
+	v, _ = r.mmap.ReadUint32(r.baseline + 32)
+	c.positionOfFile = v
+	return c
+}
+
 func (r *StreamRecord) GetProducerName() string {
 	size, _ := r.mmap.ReadUint32(r.baseline + 36)
 	if size < 1 {
