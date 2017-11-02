@@ -22,19 +22,21 @@ import (
 	"throosea.com/log"
 	"fmt"
 	"throosea.com/fatima/lib"
+	"time"
 )
 
 type MappedMBusReader struct {
-	collection 	string
-	dir        	string
-	streamSet	map[string]*StreamData
-	streamList	[]*StreamRecord
-	xy			Coordinates
-	mutex 		*sync.Mutex
+	collection    string
+	dir           string
+	streamDataSet map[string]*StreamData
+	streamRecords []*StreamRecord
+	xy            Coordinates
+	mutex         *sync.Mutex
+	running		 bool
 }
 
 func NewMappedMBusReader(path string, collection string) (*MappedMBusReader, error) {
-	m := MappedMBusReader{}
+	m := MappedMBusReader{running:false}
 	m.collection = strings.ToUpper(collection)
 	m.dir = filepath.Join(path, mbusDir, m.collection)
 	m.mutex = &sync.Mutex{}
@@ -46,22 +48,38 @@ func NewMappedMBusReader(path string, collection string) (*MappedMBusReader, err
 		return nil, err
 	}
 
-	m.streamList = coll
+	m.streamRecords = coll
 
 	loadStreamSet(&m)
 
-	log.Info("total %d stream data loaded", len(m.streamSet))
+	log.Info("total %d stream data loaded", len(m.streamDataSet))
+
+	m.running = true
+
+	// startCollectionCleaning
+	hourTick := time.NewTicker(time.Hour * 1)
+	go func() {
+		m.collectionCleaning()
+		for range hourTick.C {
+			m.collectionCleaning()
+		}
+	}()
 
 	return &m, nil
 }
 
 
 func (m *MappedMBusReader) Close() error {
-	for _, v := range m.streamList {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	m.running = false
+
+	for _, v := range m.streamRecords {
 		v.Close()
 	}
 
-	for _, v := range m.streamSet {
+	for _, v := range m.streamDataSet {
 		v.Close()
 	}
 
@@ -74,6 +92,43 @@ func (m *MappedMBusReader) Activate() error {
 	return nil
 }
 
+
+func (m *MappedMBusReader) collectionCleaning()	{
+	if !m.running {
+		return
+	}
+
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	initial := len(m.streamRecords)
+	log.Debug("start collection cleaning. initial=%d", initial)
+	for true {
+		removed := searchRetiredRecord(m.streamRecords)
+		if removed >= 0 {
+			m.streamRecords = append(m.streamRecords[:removed], m.streamRecords[removed+1:]...)
+		}
+	}
+
+	diff := initial - len(m.streamRecords)
+	if diff > 0 {
+		log.Info("maintain %d stream records", len(m.streamRecords))
+	}
+
+}
+
+func searchRetiredRecord(list []*StreamRecord) int	{
+	oldMillis := int(time.Now().AddDate(0, 0, -7).UnixNano() / 1000000)
+	for i, v := range list	{
+		if v.GetLastWriteTime() < oldMillis {
+			log.Info("mbus %s marks unused", v.GetProducerName())
+			v.markUnused()
+			return i
+		}
+	}
+
+	return -1
+}
 
 func loadCollections(mreader *MappedMBusReader) ([]*StreamRecord, error) {
 	coll := make([]*StreamRecord, 0)
@@ -110,15 +165,15 @@ func loadCollections(mreader *MappedMBusReader) ([]*StreamRecord, error) {
 }
 
 func loadStreamSet(mreader *MappedMBusReader)	{
-	mreader.streamSet = make(map[string]*StreamData)
+	mreader.streamDataSet = make(map[string]*StreamData)
 
-	for _, v := range mreader.streamList {
+	for _, v := range mreader.streamRecords {
 		data, err := loadStreamData(mreader.dir, mreader.collection, v)
 		if err != nil {
 			log.Error("fail to load stream[%s] data : %s", v.GetProducerName(), err.Error())
 			continue
 		}
-		mreader.streamSet[v.GetProducerName()] = data
+		mreader.streamDataSet[v.GetProducerName()] = data
 	}
 }
 

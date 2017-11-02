@@ -107,10 +107,21 @@ func (r *StreamRecord) IsValid() bool {
 	return false
 }
 
+func (r *StreamRecord) markUnused()  {
+	r.mmap.WriteUint32(r.baseline, 0)
+	r.mmap.WriteUint64(r.baseline, 0)
+	r.mmap.Flush()
+}
+
 func (r *StreamRecord) WriteCoordinates(xy Coordinates)  {
 	r.mmap.WriteUint32(r.baseline + 20, xy.sequence)
 	r.mmap.WriteUint32(r.baseline + 24, xy.positionOfFile)
 	r.mmap.WriteUint64(r.baseline + 12, uint64(lib.CurrentTimeMillis()))
+}
+
+func (r *StreamRecord) GetLastWriteTime() int {
+	v, _ := r.mmap.ReadUint64(r.baseline + 12)
+	return int(v)
 }
 
 func (r *StreamRecord) GetWriteCoordinates() Coordinates {
