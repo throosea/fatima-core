@@ -147,7 +147,7 @@ func (m *MappedMBusReader) consumeIncomingData() int {
 			consumeCount = consumeCount + len(read)
 			if v.GetProducerName() == "jupiter" {
 				for _, v := range read {
-					log.Info("%s", string(v))
+					log.Info("[jupiter] readCoord=[%s], newCoord=[%s]", readCoord, newCoord)
 				}
 			}
 			//log.Info("[%s] readCoord=[%s], newCoord=[%s]", v.GetProducerName(), readCoord, newCoord)
