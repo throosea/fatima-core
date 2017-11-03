@@ -264,9 +264,6 @@ func (m *MappedMBusReader) checkCollectionModified() {
 
 	if len(m.streamRecords) != len(coll) {
 		m.reflectCollectionChanges(coll)
-		if len(m.streamRecords) > 0 {
-			m.streamRecords[0].Close()
-		}
 		return
 	}
 
@@ -289,9 +286,6 @@ func (m *MappedMBusReader) checkCollectionModified() {
 
 	if !found {
 		m.reflectCollectionChanges(coll)
-		if len(m.streamRecords) > 0 {
-			m.streamRecords[0].Close()
-		}
 	} else {
 		if len(coll) > 0 {
 			coll[0].Close()
@@ -312,6 +306,7 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 	removed := make([]*StreamRecord, 0)
 	survived := make([]*StreamRecord, 0)
 
+	oldMaster := m.streamRecords
 	// remove unused stream
 	for _, v := range m.streamRecords {
 		found := false
@@ -351,6 +346,9 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 	}
 
 	m.streamRecords = survived
+	if oldMaster != nil && len(oldMaster) > 0 {
+		oldMaster[0].Close()
+	}
 
 	for _, v := range removed {
 		name := v.GetProducerName()
