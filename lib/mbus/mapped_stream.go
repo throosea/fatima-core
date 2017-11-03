@@ -25,15 +25,15 @@ package mbus
 
 import (
 	"fmt"
-	"time"
-	"throosea.com/log"
 	"throosea.com/fatima/lib"
+	"throosea.com/log"
+	"time"
+	"math"
 )
-
 
 const (
 	streamDataFileSize = 4 * 1024 * 1024 // 4m
-	streamRecordSize = 100
+	streamRecordSize   = 100
 )
 
 var streamRecordHeader uint32 = 0xd0adbeef
@@ -41,8 +41,8 @@ var streamDataFrameHeader uint32 = 0xaaadbe0f
 var streamDataEOF uint32 = 0x2211be0f
 
 type Coordinates struct {
-	sequence		uint32
-	positionOfFile	uint32
+	sequence       uint32
+	positionOfFile uint32
 }
 
 func (c Coordinates) String() string {
@@ -50,7 +50,11 @@ func (c Coordinates) String() string {
 }
 
 type StreamData struct {
-	mmap	*lib.Mmap
+	dir        string
+	collection string
+	name       string
+	readThreshold int
+	mmap       *lib.Mmap
 }
 
 func (r *StreamData) Close() error {
@@ -58,6 +62,94 @@ func (r *StreamData) Close() error {
 		return r.mmap.Close()
 	}
 	return nil
+}
+
+func (m *StreamData) Read(coord Coordinates) ([][]byte, error) {
+	baseIndex := int(coord.positionOfFile)
+	magic, err := m.mmap.ReadUint32(baseIndex)
+	if err != nil {
+		return nil, err
+	}
+
+	if magic == streamDataEOF {
+		// TODO : rolling data....
+		log.Info("rolling next data file. current = %s", coord)
+		nextSeq := coord.sequence + 1
+		coord = Coordinates{nextSeq, 0}
+		old := m.mmap
+		nextStreamData, err := prepareStreamDataFile(m.dir, m.collection, m.name, coord)
+		if err != nil {
+			return nil, fmt.Errorf("fail to load stream data : %s", err.Error())
+		}
+		m.mmap = nextStreamData.mmap
+		old.Close()
+		return nil, nil
+	} else if magic != streamDataFrameHeader {
+		// return empty
+		return nil, nil
+	}
+
+	bulk := make([][]byte, 0)
+
+	data, baseIndex, err := m.readData(baseIndex)
+	if err != nil {
+		return nil, fmt.Errorf("fail to read stream data record : %s", err.Error())
+	}
+
+	bulk = append(bulk, data)
+
+	for true {
+		magic, err := m.mmap.ReadUint32(baseIndex)
+		if err != nil {
+			log.Warn("fail to read stream header [%s, baseIndex=%d] : %s", coord, baseIndex, err.Error())
+			break
+		}
+
+		if magic != streamDataFrameHeader {
+			m.readThreshold = thresholdReadingMin
+			break
+		}
+		data, baseIndex, err := m.readData(baseIndex)
+		if err != nil {
+			log.Warn("fail to read stream data record [%s, baseIndex=%d] : %s", coord, baseIndex, err.Error())
+			break
+		}
+		bulk = append(bulk, data)
+		if len(bulk) >= m.readThreshold {
+			a := float64(m.readThreshold * 2)
+			b := float64(thresholdReadingMax)
+			m.readThreshold = int(math.Min(a, b))
+			break
+		}
+	}
+
+	return bulk, nil
+}
+
+const (
+	thresholdReadingMin = 16
+	thresholdReadingMax = 8192
+)
+
+func (m *StreamData) readData(baseIndex int) ([]byte, int, error) {
+	// case of streamDataFrameHeader
+	// write bytes to data(StreamData)
+	// 4 : header
+	// 4 : length
+	// n : data
+	dlen, err := m.mmap.ReadUint32(baseIndex + 4)
+	if err != nil {
+		return nil, baseIndex, err
+	}
+
+	data := make([]byte, dlen)
+	err = m.mmap.Read(baseIndex+8, data)
+	if err != nil {
+		return nil, baseIndex, err
+	}
+
+	baseIndex = baseIndex + 8 + int(dlen)
+	return data, baseIndex, nil
 }
 
 //
@@ -73,15 +165,15 @@ func (r *StreamData) Close() error {
 // producerName		string		// 40
 //
 type StreamRecord struct {
-	baseline		int
-	mmap			*lib.Mmap
+	baseline int
+	mmap     *lib.Mmap
 }
 
 func (r *StreamRecord) String() string {
 	return fmt.Sprintf("baseline=%d", r.baseline)
 }
 
-func (r *StreamRecord) MarkAsNew(producerName string)  {
+func (r *StreamRecord) MarkAsNew(producerName string) {
 	log.Debug("creating new producer : %s", producerName)
 	pdu := make([]byte, streamRecordSize)
 	r.mmap.GetByteOrder().PutUint32(pdu, streamRecordHeader)
@@ -107,16 +199,16 @@ func (r *StreamRecord) IsValid() bool {
 	return false
 }
 
-func (r *StreamRecord) markUnused()  {
+func (r *StreamRecord) markUnused() {
 	r.mmap.WriteUint32(r.baseline, 0)
 	r.mmap.WriteUint64(r.baseline, 0)
 	r.mmap.Flush()
 }
 
-func (r *StreamRecord) WriteCoordinates(xy Coordinates)  {
-	r.mmap.WriteUint32(r.baseline + 20, xy.sequence)
-	r.mmap.WriteUint32(r.baseline + 24, xy.positionOfFile)
-	r.mmap.WriteUint64(r.baseline + 12, uint64(lib.CurrentTimeMillis()))
+func (r *StreamRecord) WriteCoordinates(xy Coordinates) {
+	r.mmap.WriteUint32(r.baseline+20, xy.sequence)
+	r.mmap.WriteUint32(r.baseline+24, xy.positionOfFile)
+	r.mmap.WriteUint64(r.baseline+12, uint64(lib.CurrentTimeMillis()))
 }
 
 func (r *StreamRecord) GetLastWriteTime() int {
@@ -148,7 +240,7 @@ func (r *StreamRecord) GetProducerName() string {
 		return ""
 	}
 	buff := make([]byte, size)
-	r.mmap.Read(r.baseline + 40, buff)
+	r.mmap.Read(r.baseline+40, buff)
 	return string(buff)
 }
 

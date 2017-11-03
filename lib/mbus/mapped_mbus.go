@@ -62,7 +62,12 @@ func (m *MappedMBus) Write(bytes []byte) error {
 		lastPos := m.xy.positionOfFile
 		nextSeq := m.getNextSequence()
 		newCord := Coordinates{nextSeq, 0}
-		m.prepareDataFile(newCord)
+		streamData, err := prepareStreamDataFile(m.dir, m.collection, m.stream, newCord)
+		if err != nil {
+			return err
+		}
+		m.data = streamData
+		m.xy = newCord
 		m.markEOFToPreviousFile(oldData, lastPos)
 		oldData.Close()
 	}
@@ -94,24 +99,25 @@ func (m *MappedMBus) getNextSequence() uint32 {
 	return 0
 }
 
-
-func (m *MappedMBus) prepareDataFile(newCord Coordinates) error {
-	file := fmt.Sprintf("%s.%s.%d", m.collection, m.stream, newCord.sequence)
-	path := filepath.Join(m.dir, file)
+func prepareStreamDataFile(dir string, collection string, stream string, newCord Coordinates) (*StreamData, error) {
+	file := fmt.Sprintf("%s.%s.%d", collection, stream, newCord.sequence)
+	path := filepath.Join(dir, file)
 
 	log.Debug("prepare data file path : %s", path)
 
 	// streamDataFileSize
 	mm, err := lib.NewMmap(path, streamDataFileSize)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("fail to open new mmap : %s", err.Error())
 	}
 
-	m.data = new(StreamData)
-	m.data.mmap = mm
-	m.xy = newCord
-
-	return nil
+	data := new(StreamData)
+	data.mmap = mm
+	data.dir = dir
+	data.collection = collection
+	data.readThreshold = thresholdReadingMin
+	data.name = stream
+	return data, nil
 }
 
 func (m *MappedMBus) markEOFToPreviousFile(data *StreamData, pos uint32) error {
