@@ -232,22 +232,24 @@ func (m *MappedMBusReader) checkCollectionModified() {
 	}
 
 	m.rw.RLock()
-	defer m.rw.RUnlock()
 
 	found := false
 	for _, work := range m.streamRecords {
+		found = false
 		for _, candi := range coll {
 			if strings.Compare(work.GetProducerName(), candi.GetProducerName()) == 0 {
 				found = true
 				break
 			}
 		}
-		if found {
+		if !found {
 			break
 		}
 	}
 
-	if found {
+	defer m.rw.RUnlock()
+
+	if !found {
 		m.reflectCollectionChanges(coll)
 	}
 }
@@ -262,6 +264,7 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 	m.rw.Lock()
 	m.rw.Unlock()
 
+	log.Info("refresh coll STEP 1")
 	removed := make([]*StreamRecord, 0)
 	survived := make([]*StreamRecord, 0)
 
@@ -281,6 +284,7 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 		}
 	}
 
+	log.Info("refresh coll STEP 2 %d, %d", len(survived), len(removed))
 	// find new stream
 	for _, v := range fresh {
 		found := false
@@ -302,8 +306,10 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 		}
 	}
 
+	log.Info("refresh coll STEP 3")
 	m.streamRecords = survived
 
+	log.Info("refresh coll STEP 4")
 	for _, v := range removed {
 		name := v.GetProducerName()
 		data := m.streamDataSet[name]
