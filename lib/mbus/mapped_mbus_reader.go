@@ -306,7 +306,7 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 	removed := make([]*StreamRecord, 0)
 	survived := make([]*StreamRecord, 0)
 
-	oldMaster := m.streamRecords
+	//oldMaster := m.streamRecords
 	// remove unused stream
 	for _, v := range m.streamRecords {
 		found := false
@@ -346,9 +346,9 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 	}
 
 	m.streamRecords = survived
-	if oldMaster != nil && len(oldMaster) > 0 {
-		oldMaster[0].Close()
-	}
+	//if oldMaster != nil && len(oldMaster) > 0 {
+	//	oldMaster[0].Close()
+	//}
 
 	for _, v := range removed {
 		name := v.GetProducerName()
