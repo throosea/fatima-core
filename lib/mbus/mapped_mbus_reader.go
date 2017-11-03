@@ -129,12 +129,11 @@ func (m *MappedMBusReader) startReading() {
 
 		count := m.readIncomingData()
 		if count == 0 {
+			sleepMillis = math.Min(sleepMillis * 2, maxConsumingSleepMillis)
+			time.Sleep(time.Millisecond * time.Duration(sleepMillis))
+		} else {
 			sleepMillis = 1.0
-			continue
 		}
-
-		sleepMillis = math.Min(sleepMillis * 2, maxConsumingSleepMillis)
-		time.Sleep(time.Millisecond * time.Duration(sleepMillis))
 	}
 }
 
