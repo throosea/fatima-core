@@ -171,7 +171,7 @@ func (m *MappedMBusReader) readIncomingData() int {
 		}
 		if read != nil {
 			v.MarkReadCoordinates(newCoord)
-			if v.GetProducerName() == "juno" {
+			if v.GetProducerName() != "woorifis" {
 				log.Info("[%s] %s", v.GetProducerName(), readCoord)
 			}
 			consumeCount = consumeCount + len(read)
