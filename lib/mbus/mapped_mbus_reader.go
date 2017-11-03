@@ -135,7 +135,8 @@ func (m *MappedMBusReader) consumeIncomingData() int {
 			continue
 		}
 
-		read, newCoord, err := data.Read(v.GetReadCoordinates())
+		readCoord := v.GetReadCoordinates()
+		read, newCoord, err := data.Read(readCoord)
 		if err != nil {
 			// logging?
 			log.Error("fail to read : %s", err.Error())
@@ -144,10 +145,11 @@ func (m *MappedMBusReader) consumeIncomingData() int {
 		if read != nil {
 			v.MarkReadCoordinates(newCoord)
 			consumeCount = consumeCount + len(read)
+			log.Info("[%s] readCoord=[%s], newCoord=[%s]", v.GetProducerName(), readCoord, newCoord)
 			// TODO : consume...
-			for _, v := range read {
-				log.Info("%s", string(v))
-			}
+			//for _, v := range read {
+			//	log.Info("%s", string(v))
+			//}
 		}
 	}
 	return consumeCount
