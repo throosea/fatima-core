@@ -122,12 +122,17 @@ func (m *MappedMBusReader) Activate() error {
 func (m *MappedMBusReader) startReading() {
 	sleepMillis := 1.0
 
+	logCnt := 0
 	for true {
 		if !m.running	{
 			return
 		}
 
 		count := m.readIncomingData()
+		logCnt++
+		if logCnt < 10 {
+			log.Info("count : %d", count)
+		}
 		if count == 0 {
 			sleepMillis = math.Min(sleepMillis * 2, maxConsumingSleepMillis)
 			time.Sleep(time.Millisecond * time.Duration(sleepMillis))
