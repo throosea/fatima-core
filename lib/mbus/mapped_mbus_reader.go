@@ -25,6 +25,7 @@ import (
 	"time"
 	"bytes"
 	"math"
+	"os"
 )
 
 type MappedMBusReader struct {
@@ -353,12 +354,20 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 
 	for _, v := range removed {
 		name := v.GetProducerName()
+		log.Info("try to delete %s", name)
 		data := m.streamDataSet[name]
 		if data != nil {
 			data.Close()
+			file := fmt.Sprintf("%s.%s.%d", data.collection, name, v.GetReadCoordinates().sequence)
+			log.Info("removing file %s", file)
+			err := os.Remove(filepath.Join(m.dir, file))
+			if err != nil {
+				log.Warn("fail to remove stream data file [%s] : %s", file, err.Error())
+			}
 		}
+
 		delete(m.streamDataSet, name)
-		v.Close()
+		v.markUnused()
 	}
 
 	var buff bytes.Buffer
