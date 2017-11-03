@@ -51,6 +51,13 @@ func (c Coordinates) String() string {
 	return fmt.Sprintf("seq=[%d], pos=[%d]", c.sequence, c.positionOfFile)
 }
 
+func (c Coordinates) Equal(t Coordinates) bool {
+	if c.sequence == t.sequence && c.positionOfFile == t.positionOfFile {
+		return true
+	}
+	return false
+}
+
 type StreamData struct {
 	dir        string
 	collection string
@@ -88,6 +95,7 @@ func (m *StreamData) Read(coord Coordinates) ([][]byte, Coordinates, error) {
 			time.Sleep(time.Second)
 			return nil, coord, fmt.Errorf("fail to load stream data : %s", err.Error())
 		}
+
 		m.mmap = nextStreamData.mmap
 
 		// remove previous one

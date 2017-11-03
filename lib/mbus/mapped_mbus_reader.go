@@ -169,8 +169,12 @@ func (m *MappedMBusReader) readIncomingData() int {
 			log.Error("fail to read : %s", err.Error())
 			continue
 		}
-		if read != nil {
+
+		if read != nil || (readCoord.sequence != newCoord.sequence) {
 			v.MarkReadCoordinates(newCoord)
+		}
+
+		if read != nil {
 			consumeCount = consumeCount + len(read)
 			if m.consume != nil {
 				for _, v := range read {
