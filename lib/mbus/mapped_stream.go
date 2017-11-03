@@ -29,6 +29,8 @@ import (
 	"throosea.com/log"
 	"time"
 	"math"
+	"os"
+	"path/filepath"
 )
 
 const (
@@ -73,9 +75,12 @@ func (m *StreamData) Read(coord Coordinates) ([][]byte, Coordinates, error) {
 
 	if magic == streamDataEOF {
 		log.Info("rolling next data file. current = %s:%s", m.name, coord)
+		old := m.mmap
+		oldSeq := coord.sequence
+
+		// prepare next
 		nextSeq := getNextSequence(coord.sequence)
 		coord = Coordinates{nextSeq, 0}
-		old := m.mmap
 		nextStreamData, err := prepareStreamDataFile(m.dir, m.collection, m.name, coord)
 		log.Info("prepared.... next = %s:%s", m.name, coord)
 		if err != nil {
@@ -84,7 +89,14 @@ func (m *StreamData) Read(coord Coordinates) ([][]byte, Coordinates, error) {
 			return nil, coord, fmt.Errorf("fail to load stream data : %s", err.Error())
 		}
 		m.mmap = nextStreamData.mmap
+
+		// remove previous one
 		old.Close()
+		file := fmt.Sprintf("%s.%s.%d", m.collection, m.name, oldSeq)
+		err = os.Remove(filepath.Join(m.dir, file))
+		if err != nil {
+			log.Warn("fail to remove stream data file [%s] : %s", file, err.Error())
+		}
 		return nil, coord, nil
 	} else if magic != streamDataFrameHeader {
 		// return empty
