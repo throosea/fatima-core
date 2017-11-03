@@ -145,6 +145,11 @@ func (m *MappedMBusReader) consumeIncomingData() int {
 		if read != nil {
 			v.MarkReadCoordinates(newCoord)
 			consumeCount = consumeCount + len(read)
+			if v.GetProducerName() == "jupiter" {
+				for _, v := range read {
+					log.Info("%s", string(v))
+				}
+			}
 			//log.Info("[%s] readCoord=[%s], newCoord=[%s]", v.GetProducerName(), readCoord, newCoord)
 			// TODO : consume...
 			//for _, v := range read {
