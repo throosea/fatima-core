@@ -306,18 +306,19 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 	removed := make([]*StreamRecord, 0)
 	survived := make([]*StreamRecord, 0)
 
-	//oldMaster := m.streamRecords
+	oldMaster := m.streamRecords
+
 	// remove unused stream
 	for _, v := range m.streamRecords {
-		found := false
+		var survivor *StreamRecord
 		for _, t := range fresh {
 			if strings.Compare(v.GetProducerName(), t.GetProducerName()) == 0 {
-				found = true
+				survivor = t
 				break
 			}
 		}
-		if found {
-			survived = append(survived, v)
+		if survivor != nil {
+			survived = append(survived, survivor)
 		} else {
 			removed = append(removed, v)
 		}
@@ -346,10 +347,6 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 	}
 
 	m.streamRecords = survived
-	//if oldMaster != nil && len(oldMaster) > 0 {
-	//	oldMaster[0].Close()
-	//}
-
 	for _, v := range removed {
 		name := v.GetProducerName()
 		log.Info("try to delete %s", name)
@@ -366,6 +363,10 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 
 		delete(m.streamDataSet, name)
 		v.markUnused()
+	}
+
+	if oldMaster != nil && len(oldMaster) > 0 {
+		oldMaster[0].Close()
 	}
 
 	var buff bytes.Buffer
