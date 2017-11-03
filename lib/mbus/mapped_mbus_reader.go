@@ -233,7 +233,7 @@ func (m *MappedMBusReader) collectionCleaning() {
 	log.Debug("start collection cleaning. initial=%d", initial)
 
 	for true {
-		removed := searchRetiredRecord(m.streamRecords)
+		removed := m.searchRetiredRecord(m.streamRecords)
 		if removed < 0 {
 			break
 		}
@@ -349,20 +349,10 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 	m.streamRecords = survived
 	for _, v := range removed {
 		name := v.GetProducerName()
+		sequence := v.GetReadCoordinates().sequence
 		log.Info("try to delete %s", name)
 		data := m.streamDataSet[name]
-		if data != nil {
-			data.Close()
-			file := fmt.Sprintf("%s.%s.%d", data.collection, name, v.GetReadCoordinates().sequence)
-			log.Info("removing file %s", file)
-			err := os.Remove(filepath.Join(m.dir, file))
-			if err != nil {
-				log.Warn("fail to remove stream data file [%s] : %s", file, err.Error())
-			}
-		}
-
-		delete(m.streamDataSet, name)
-		v.markUnused()
+		removeStreamData(data, int(sequence))
 	}
 
 	if oldMaster != nil && len(oldMaster) > 0 {
@@ -378,17 +368,36 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 	log.Warn("after collection refined : %s", buff.String())
 }
 
-func searchRetiredRecord(list []*StreamRecord) int {
+func (m *MappedMBusReader) searchRetiredRecord(list []*StreamRecord) int {
 	oldMillis := int(time.Now().AddDate(0, 0, -7).UnixNano() / 1000000)
 	for i, v := range list {
 		if v.GetLastWriteTime() < oldMillis {
-			log.Info("mbus %s marks unused", v.GetProducerName())
-			v.markUnused()
+			name := v.GetProducerName()
+			sequence := v.GetReadCoordinates().sequence
+
+			data := m.streamDataSet[name]
+			removeStreamData(data, int(sequence))
 			return i
 		}
 	}
 
 	return -1
+}
+
+func removeStreamData(data *StreamData, sequence int) {
+	if data == nil {
+		return
+	}
+
+	log.Info("try to delete %s", data.name)
+
+	data.Close()
+	file := fmt.Sprintf("%s.%s.%d", data.collection, data.name, sequence)
+	log.Info("removing file %s", file)
+	err := os.Remove(filepath.Join(data.dir, file))
+	if err != nil {
+		log.Warn("fail to remove stream data file [%s] : %s", file, err.Error())
+	}
 }
 
 func loadCollections(mreader *MappedMBusReader) ([]*StreamRecord, error) {
