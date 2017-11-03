@@ -62,7 +62,7 @@ func NewMappedMBusReader(path string, collection string, consume func([]byte)) (
 	log.Info("total %d stream loaded to collection", len(coll))
 
 	for _, v := range coll {
-		log.Info("[%s] write=[%s], read=[%s]", v.GetProducerName(), v.GetWriteCoordinates(), v.GetReadCoordinates())
+		log.Trace("[%s] write=[%s], read=[%s]", v.GetProducerName(), v.GetWriteCoordinates(), v.GetReadCoordinates())
 	}
 
 	loadStreamSet(&m)

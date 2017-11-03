@@ -81,7 +81,7 @@ func (m *StreamData) Read(coord Coordinates) ([][]byte, Coordinates, error) {
 	}
 
 	if magic == streamDataEOF {
-		log.Info("rolling next data file. current = %s:%s", m.name, coord)
+		log.Debug("rolling next data file. current = %s:%s", m.name, coord)
 		old := m.mmap
 		oldSeq := coord.sequence
 
@@ -89,7 +89,7 @@ func (m *StreamData) Read(coord Coordinates) ([][]byte, Coordinates, error) {
 		nextSeq := getNextSequence(coord.sequence)
 		coord = Coordinates{nextSeq, 0}
 		nextStreamData, err := prepareStreamDataFile(m.dir, m.collection, m.name, coord)
-		log.Info("prepared.... next = %s:%s", m.name, coord)
+		log.Debug("prepared.... next = %s:%s", m.name, coord)
 		if err != nil {
 			// temporary
 			time.Sleep(time.Second)
