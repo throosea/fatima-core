@@ -306,7 +306,7 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 	log.Info("refresh collections... old[%d], new[%d]", len(m.streamRecords), len(fresh))
 
 	m.rw.Lock()
-	m.rw.Unlock()
+	defer m.rw.Unlock()
 
 	removed := make([]*StreamRecord, 0)
 	survived := make([]*StreamRecord, 0)
