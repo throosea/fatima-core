@@ -130,9 +130,9 @@ func (m *MappedMBusReader) startReading() {
 
 		count := m.readIncomingData()
 		logCnt++
-		if logCnt < 100 {
-			log.Info("count : %d", count)
-		}
+		//if logCnt < 100 {
+		//	log.Info("count : %d", count)
+		//}
 		if count == 0 {
 			sleepMillis = math.Min(sleepMillis * 2, maxConsumingSleepMillis)
 			time.Sleep(time.Millisecond * time.Duration(sleepMillis))
@@ -171,9 +171,9 @@ func (m *MappedMBusReader) readIncomingData() int {
 		}
 		if read != nil {
 			v.MarkReadCoordinates(newCoord)
-			if v.GetProducerName() != "woorifis" {
-				log.Info("[%s] %s", v.GetProducerName(), readCoord)
-			}
+			//if v.GetProducerName() != "woorifis" {
+			//	log.Info("[%s] %s", v.GetProducerName(), readCoord)
+			//}
 			consumeCount = consumeCount + len(read)
 			if m.consume != nil {
 				for _, v := range read {
