@@ -121,13 +121,7 @@ func prepareStreamDataFile(dir string, collection string, stream string, newCord
 }
 
 func (m *MappedMBus) markEOFToPreviousFile(data *StreamData, pos uint32) error {
-	buff := make([]byte, 4)
-	m.record.mmap.GetByteOrder().PutUint32(buff, streamDataEOF)
-	e := data.mmap.Write(int(pos), buff)
-	if e != nil {
-		return e
-	}
-	return nil
+	return data.mmap.WriteUint32(int(pos), streamDataEOF)
 }
 
 func (m *MappedMBus) Close() error {
