@@ -91,6 +91,7 @@ func (m *MappedMBusReader) Activate() error {
 		m.startReading()
 	} ()
 
+	log.Info("mbus reader activated")
 	return nil
 }
 
@@ -124,18 +125,24 @@ func (m *MappedMBusReader) consumeIncomingData() int {
 
 	consumeCount := 0
 	for _, v := range m.streamRecords {
+		if !m.running {
+			break
+		}
+
 		data := m.streamDataSet[v.GetProducerName()]
 		if data == nil {
 			// logging?
 			continue
 		}
-		read, err := data.Read(v.GetReadCoordinates())
+
+		read, newCoord, err := data.Read(v.GetReadCoordinates())
 		if err != nil {
 			// logging?
 			log.Error("fail to read : %s", err.Error())
 			continue
 		}
 		if read != nil {
+			v.MarkReadCoordinates(newCoord)
 			consumeCount = consumeCount + len(read)
 			// TODO : consume...
 			for _, v := range read {

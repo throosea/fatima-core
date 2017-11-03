@@ -64,36 +64,39 @@ func (r *StreamData) Close() error {
 	return nil
 }
 
-func (m *StreamData) Read(coord Coordinates) ([][]byte, error) {
+func (m *StreamData) Read(coord Coordinates) ([][]byte, Coordinates, error) {
 	baseIndex := int(coord.positionOfFile)
 	magic, err := m.mmap.ReadUint32(baseIndex)
 	if err != nil {
-		return nil, err
+		return nil, coord, err
 	}
 
 	if magic == streamDataEOF {
-		// TODO : rolling data....
 		log.Info("rolling next data file. current = %s", coord)
-		nextSeq := coord.sequence + 1
+		nextSeq := getNextSequence(coord.sequence)
 		coord = Coordinates{nextSeq, 0}
 		old := m.mmap
 		nextStreamData, err := prepareStreamDataFile(m.dir, m.collection, m.name, coord)
 		if err != nil {
-			return nil, fmt.Errorf("fail to load stream data : %s", err.Error())
+			// temporary
+			time.Sleep(time.Second)
+			return nil, coord, fmt.Errorf("fail to load stream data : %s", err.Error())
 		}
 		m.mmap = nextStreamData.mmap
 		old.Close()
-		return nil, nil
+		return nil, coord, nil
 	} else if magic != streamDataFrameHeader {
 		// return empty
-		return nil, nil
+		return nil, coord, nil
 	}
 
 	bulk := make([][]byte, 0)
 
 	data, baseIndex, err := m.readData(baseIndex)
 	if err != nil {
-		return nil, fmt.Errorf("fail to read stream data record : %s", err.Error())
+		// temporary
+		time.Sleep(time.Second)
+		return nil, coord, fmt.Errorf("fail to read stream data record : %s", err.Error())
 	}
 
 	bulk = append(bulk, data)
@@ -123,7 +126,7 @@ func (m *StreamData) Read(coord Coordinates) ([][]byte, error) {
 		}
 	}
 
-	return bulk, nil
+	return bulk, Coordinates{coord.sequence, uint32(baseIndex)}, nil
 }
 
 const (
@@ -205,10 +208,15 @@ func (r *StreamRecord) markUnused() {
 	r.mmap.Flush()
 }
 
-func (r *StreamRecord) WriteCoordinates(xy Coordinates) {
+func (r *StreamRecord) MarkWriteCoordinates(xy Coordinates) {
 	r.mmap.WriteUint32(r.baseline+20, xy.sequence)
 	r.mmap.WriteUint32(r.baseline+24, xy.positionOfFile)
 	r.mmap.WriteUint64(r.baseline+12, uint64(lib.CurrentTimeMillis()))
+}
+
+func (r *StreamRecord) MarkReadCoordinates(xy Coordinates) {
+	r.mmap.WriteUint32(r.baseline+28, xy.sequence)
+	r.mmap.WriteUint32(r.baseline+32, xy.positionOfFile)
 }
 
 func (r *StreamRecord) GetLastWriteTime() int {

@@ -60,7 +60,7 @@ func (m *MappedMBus) Write(bytes []byte) error {
 		log.Debug("rolling next data file. current = %s", m.xy)
 		oldData := m.data
 		lastPos := m.xy.positionOfFile
-		nextSeq := m.getNextSequence()
+		nextSeq := getNextSequence(m.xy.sequence)
 		newCord := Coordinates{nextSeq, 0}
 		streamData, err := prepareStreamDataFile(m.dir, m.collection, m.stream, newCord)
 		if err != nil {
@@ -88,13 +88,13 @@ func (m *MappedMBus) Write(bytes []byte) error {
 	// write(mark) coordinate to record
 	size := int(m.xy.positionOfFile) + 8 + blen
 	m.xy.positionOfFile = uint32(size)
-	m.record.WriteCoordinates(m.xy)
+	m.record.MarkWriteCoordinates(m.xy)
 	return nil
 }
 
-func (m *MappedMBus) getNextSequence() uint32 {
-	if m.xy.sequence < 2147483647 {
-		return m.xy.sequence + 1
+func getNextSequence(currentSeq uint32) uint32 {
+	if currentSeq < 2147483647 {
+		return currentSeq + 1
 	}
 	return 0
 }
