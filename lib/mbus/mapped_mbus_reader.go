@@ -369,8 +369,7 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 }
 
 func (m *MappedMBusReader) searchRetiredRecord(list []*StreamRecord) int {
-	//oldMillis := int(time.Now().AddDate(0, 0, -7).UnixNano() / 1000000)
-	oldMillis := int(time.Now().Add(time.Hour * -1).UnixNano() / 1000000)
+	oldMillis := int(time.Now().AddDate(0, 0, -7).UnixNano() / 1000000)
 	for i, v := range list {
 		if v.GetLastWriteTime() < oldMillis {
 			name := v.GetProducerName()
