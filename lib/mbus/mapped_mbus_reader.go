@@ -378,6 +378,7 @@ func (m *MappedMBusReader) searchRetiredRecord(list []*StreamRecord) int {
 
 			data := m.streamDataSet[name]
 			removeStreamData(data, int(sequence))
+			v.markUnused()
 			return i
 		}
 	}
