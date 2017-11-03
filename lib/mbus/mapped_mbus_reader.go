@@ -130,7 +130,7 @@ func (m *MappedMBusReader) startReading() {
 
 		count := m.readIncomingData()
 		logCnt++
-		if logCnt < 10 {
+		if logCnt < 100 {
 			log.Info("count : %d", count)
 		}
 		if count == 0 {
