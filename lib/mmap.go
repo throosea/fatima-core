@@ -191,7 +191,7 @@ func (m *Mmap) FlushRegion(ptr int, length int) error {
 
 func (m *Mmap) Close() error {
 	if m.file != nil {
-		log.Debug("mmap file [%s] closed", m.file.Name())
+		log.Trace("mmap file [%s] closed", m.file.Name())
 		m.file.Close()
 		m.file = nil
 		m.unmap()

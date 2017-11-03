@@ -262,10 +262,14 @@ func (m *MappedMBusReader) checkCollectionModified() {
 
 	if len(m.streamRecords) != len(coll) {
 		m.reflectCollectionChanges(coll)
+		if len(m.streamRecords) > 0 {
+			m.streamRecords[0].Close()
+		}
 		return
 	}
 
 	m.rw.RLock()
+	defer m.rw.RUnlock()
 
 	found := false
 	for _, work := range m.streamRecords {
@@ -281,10 +285,15 @@ func (m *MappedMBusReader) checkCollectionModified() {
 		}
 	}
 
-	defer m.rw.RUnlock()
-
 	if !found {
 		m.reflectCollectionChanges(coll)
+		if len(m.streamRecords) > 0 {
+			m.streamRecords[0].Close()
+		}
+	} else {
+		if len(coll) > 0 {
+			coll[0].Close()
+		}
 	}
 }
 
@@ -379,9 +388,9 @@ func loadCollections(mreader *MappedMBusReader) ([]*StreamRecord, error) {
 	name := fmt.Sprintf("%s.COLLECTION", mreader.collection)
 	collectionFile := filepath.Join(mreader.dir, strings.ToUpper(name))
 	size := maxStreamSize * streamRecordSize
-	m, err := lib.NewMmap(collectionFile, size)
+	recordMaster, err := lib.NewMmap(collectionFile, size)
 	if err != nil {
-		return coll, err
+		return nil, err
 	}
 
 	mreader.rw.Lock()
@@ -390,12 +399,12 @@ func loadCollections(mreader *MappedMBusReader) ([]*StreamRecord, error) {
 	ptr := 0
 	for true {
 		b := make([]byte, streamRecordSize)
-		err = m.Read(ptr, b)
+		err = recordMaster.Read(ptr, b)
 		if err != nil {
-			m.Close()
-			return coll, err
+			recordMaster.Close()
+			return nil, err
 		}
-		r := newStreamRecord(ptr, m)
+		r := newStreamRecord(ptr, recordMaster)
 		if r.IsValid() {
 			coll = append(coll, r)
 		}
