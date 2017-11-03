@@ -35,13 +35,21 @@ type MappedMBusReader struct {
 	xy            Coordinates
 	rw            *sync.RWMutex
 	running       bool
+	consume			func([]byte)
+	recordChan		chan IncomingRecord
 }
 
-func NewMappedMBusReader(path string, collection string) (*MappedMBusReader, error) {
+type IncomingRecord struct {
+	last  	bool
+	data	[]byte
+}
+
+func NewMappedMBusReader(path string, collection string, consume func([]byte)) (*MappedMBusReader, error) {
 	m := MappedMBusReader{running: false}
 	m.collection = strings.ToUpper(collection)
 	m.dir = filepath.Join(path, mbusDir, m.collection)
 	m.rw = &sync.RWMutex{}
+	m.consume = consume
 
 	ensureDirectory(m.dir)
 
@@ -57,16 +65,24 @@ func NewMappedMBusReader(path string, collection string) (*MappedMBusReader, err
 
 	log.Info("total %d stream data loaded", len(m.streamDataSet))
 
+	if consume != nil {
+		m.recordChan = make(chan IncomingRecord, math.MaxUint16)
+	}
+
 	m.running = true
 
 	return &m, nil
 }
 
 func (m *MappedMBusReader) Close() error {
+	m.running = false
+
 	m.rw.Lock()
 	defer m.rw.Unlock()
 
-	m.running = false
+	if m.consume != nil {
+		m.recordChan <- IncomingRecord{last:true}
+	}
 
 	for _, v := range m.streamRecords {
 		v.Close()
@@ -88,6 +104,10 @@ func (m *MappedMBusReader) Activate() error {
 	m.startCheckingCollectionModified()
 
 	go func()	{
+		m.startRecordConsume()
+	} ()
+
+	go func()	{
 		m.startReading()
 	} ()
 
@@ -103,7 +123,7 @@ func (m *MappedMBusReader) startReading() {
 			return
 		}
 
-		count := m.consumeIncomingData()
+		count := m.readIncomingData()
 		if count == 0 {
 			sleepMillis = 1.0
 			continue
@@ -118,8 +138,7 @@ const (
 	maxConsumingSleepMillis = 16.0
 )
 
-// TODO
-func (m *MappedMBusReader) consumeIncomingData() int {
+func (m *MappedMBusReader) readIncomingData() int {
 	m.rw.Lock()
 	defer m.rw.Unlock()
 
@@ -145,25 +164,29 @@ func (m *MappedMBusReader) consumeIncomingData() int {
 		if read != nil {
 			v.MarkReadCoordinates(newCoord)
 			consumeCount = consumeCount + len(read)
-			if v.GetProducerName() == "jupiter" {
-				log.Info("[%s] readCoord=[%s], newCoord=[%s]", v.GetProducerName(), readCoord, newCoord)
-				//for _, v := range read {
-				//	log.Info("[jupiter] readCoord=[%s], newCoord=[%s]", readCoord, newCoord)
-				//}
+			if m.consume != nil {
+				for _, v := range read {
+					m.recordChan <- IncomingRecord{last:false, data:v}
+				}
 			}
-			//log.Info("[%s] readCoord=[%s], newCoord=[%s]", v.GetProducerName(), readCoord, newCoord)
-			// TODO : consume...
-			//for _, v := range read {
-			//	log.Info("%s", string(v))
-			//}
 		}
 	}
 	return consumeCount
 }
 
-func (m *MappedMBusReader) readIncoming() []byte {
+func (m *MappedMBusReader) startRecordConsume()  {
+	if m.consume == nil {
+		return
+	}
 
-	return nil
+	for {
+		r := <- m.recordChan
+		if r.last {
+			return
+		}
+
+		m.consume(r.data)
+	}
 }
 
 func (m *MappedMBusReader) startCollectionCleaning() {
@@ -264,7 +287,6 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 	m.rw.Lock()
 	m.rw.Unlock()
 
-	log.Info("refresh coll STEP 1")
 	removed := make([]*StreamRecord, 0)
 	survived := make([]*StreamRecord, 0)
 
@@ -284,7 +306,7 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 		}
 	}
 
-	log.Info("refresh coll STEP 2 %d, %d", len(survived), len(removed))
+	log.Info("collection. survived=%d, removed=%d", len(survived), len(removed))
 	// find new stream
 	for _, v := range fresh {
 		found := false
@@ -306,10 +328,8 @@ func (m *MappedMBusReader) reflectCollectionChanges(fresh []*StreamRecord) {
 		}
 	}
 
-	log.Info("refresh coll STEP 3")
 	m.streamRecords = survived
 
-	log.Info("refresh coll STEP 4")
 	for _, v := range removed {
 		name := v.GetProducerName()
 		data := m.streamDataSet[name]
