@@ -144,7 +144,7 @@ func (m *MappedMBusReader) startReading() {
 }
 
 const (
-	maxConsumingSleepMillis = 16.0
+	maxConsumingSleepMillis = 128.0
 )
 
 func (m *MappedMBusReader) readIncomingData() int {
