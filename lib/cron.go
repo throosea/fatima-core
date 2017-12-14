@@ -187,7 +187,7 @@ func newCronJob(config fatima.Config, name string, runnable func(string, fatima.
 
 	descKey := fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixDesc)
 	desc, ok := config.GetValue(descKey)
-	if ok {
+	if !ok {
 		desc = name
 	}
 

@@ -77,7 +77,7 @@ func NewMmap(filepath string, length int) (*Mmap, error) {
 		fi, err = m.file.Stat()
 		fileSize := int(fi.Size())
 		if length > fileSize {
-			return nil, fmt.Errorf("exist file size is %d, but required %d", fileSize, length)
+			return nil, fmt.Errorf("mmap: exist file[%s] size is %d, but required %d", filepath, fileSize, length)
 		}
 	}
 
