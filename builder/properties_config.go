@@ -30,6 +30,7 @@ import (
 	"throosea.com/log"
 	"strconv"
 	"strings"
+	"os"
 )
 
 type PropertyConfigReader struct {
@@ -45,13 +46,21 @@ func NewPropertyConfigReader(env fatima.FatimaEnv, predefines fatima.Predefines)
 	instance.configuration = make(map[string]string)
 
 	var filename = ""
+	var propFilePath = ""
 	if env.GetProfile() == "" {
 		filename = fmt.Sprintf("%s.properties", env.GetSystemProc().GetProgramName())
 	} else {
 		filename = fmt.Sprintf("%s.%s.properties", env.GetSystemProc().GetProgramName(), env.GetProfile())
+		checkFileAvailable(filename)
 	}
+	propFilePath = filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
+	if !checkFileAvailable(propFilePath) && env.GetProfile() != "" {
+		filename = fmt.Sprintf("%s.properties", env.GetSystemProc().GetProgramName())
+		propFilePath = filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
+	}
+
 	log.Info("using properties file : %s", filename)
-	props, err := readProperties(filepath.Join(env.GetFolderGuide().GetAppFolder(), filename))
+	props, err := readProperties(propFilePath)
 	if err != nil {
 		log.Warn("cannot load properties file : %s", err.Error())
 	}
@@ -117,4 +126,13 @@ func (this *PropertyConfigReader) GetDefine(key string) (string, bool) {
 	return this.predefines.GetDefine(key)
 }
 
+
+func checkFileAvailable(path string) bool	{
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		log.Warn("file [%s] does not exist", path)
+		return false
+	}
+
+	return true
+}
 
