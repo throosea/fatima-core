@@ -64,7 +64,6 @@ func (al AlarmLevel) String() string {
 	return fmt.Sprintf("Unknown alarm level value : %d", al)
 }
 
-
 type SystemNotifyHandler interface {
 	SendAlarm(level AlarmLevel, message string)
 	SendActivity(json interface{})
