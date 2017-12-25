@@ -61,8 +61,8 @@ func NewDefaultSystemNotifyHandler(fatimaRuntime fatima.FatimaRuntime) (monitor.
 	return &handler, nil
 }
 
-func (s *DefaultSystemNotifyHandler) SendAlarm(message string) {
-	s.mbus.Write(buildAlarmMessage(s.fatimaRuntime, message))
+func (s *DefaultSystemNotifyHandler) SendAlarm(level monitor.AlarmLevel, message string) {
+	s.mbus.Write(buildAlarmMessage(s.fatimaRuntime, level, message))
 }
 
 func (s *DefaultSystemNotifyHandler) SendEvent(message string, v ...interface{}) {
@@ -73,7 +73,7 @@ func (s *DefaultSystemNotifyHandler) SendActivity(json interface{}) {
 	s.mbus.Write(buildActivityMessage(s.fatimaRuntime, json))
 }
 
-func buildAlarmMessage(fatimaRuntime fatima.FatimaRuntime, message string) []byte {
+func buildAlarmMessage(fatimaRuntime fatima.FatimaRuntime, level monitor.AlarmLevel, message string) []byte {
 	m := make(map[string]interface{})
 	header := make(map[string]interface{})
 	body := make(map[string]interface{})
@@ -92,7 +92,7 @@ func buildAlarmMessage(fatimaRuntime fatima.FatimaRuntime, message string) []byt
 	alarm := make(map[string]interface{})
 	alarm["type"] = "ALARM"
 	alarm["timestamp"] = time.Now().Format("2006-01-02 15:04:05")
-	alarm["alarm_level"] = "WARN"
+	alarm["alarm_level"] = level.String()
 	alarm["from"] = "go-fatima"
 	alarm["initiator"] = "go-fatima"
 	alarm["message"] = message

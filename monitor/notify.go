@@ -28,24 +28,45 @@ import (
 )
 
 const (
-	NOTIFY_ALARM = 0
-	NOTIFY_EVENT = 1
+	notifyAlarm = iota
+	notifyEvent
 )
 
 type NotifyType uint8
 
-func (this NotifyType) String() string {
-	switch this {
-	case NOTIFY_ALARM:
+func (n NotifyType) String() string {
+	switch n {
+	case notifyAlarm:
 		return "ALARM"
-	case NOTIFY_EVENT:
+	case notifyEvent:
 		return "EVENT"
 	}
-	return fmt.Sprintf("Unknown notify value : %d", this)
+	return fmt.Sprintf("Unknown notify value : %d", n)
 }
 
+const (
+	AlarmLevelWarn = iota
+	AlarmLevelMinor
+	AlamLevelMajor
+)
+
+type AlarmLevel	uint8
+
+func (al AlarmLevel) String() string {
+	switch al {
+	case AlarmLevelWarn:
+		return "WARN"
+	case AlarmLevelMinor:
+		return "MINOR"
+	case AlamLevelMajor:
+		return "MAJOR"
+	}
+	return fmt.Sprintf("Unknown alarm level value : %d", al)
+}
+
+
 type SystemNotifyHandler interface {
-	SendAlarm(message string)
+	SendAlarm(level AlarmLevel, message string)
 	SendActivity(json interface{})
 	SendEvent(message string, v ...interface{})
 }

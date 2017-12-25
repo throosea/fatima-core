@@ -110,7 +110,7 @@ func (this *DefaultProcessInteractor) Run() {
 	lib.StartCron()
 	bootupNotify()
 	this.pprofService()
-	this.runtimeProcess.GetSystemNotifyHandler().SendAlarm("프로세스가 시작 되었습니다")
+	this.runtimeProcess.GetSystemNotifyHandler().SendEvent("프로세스가 시작 되었습니다")
 }
 
 func (this *DefaultProcessInteractor) Stop() {
@@ -118,7 +118,7 @@ func (this *DefaultProcessInteractor) Stop() {
 }
 
 func (this *DefaultProcessInteractor) Shutdown() {
-	this.runtimeProcess.GetSystemNotifyHandler().SendAlarm("프로세스가 중지 되었습니다")
+	this.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlamLevelMajor, "프로세스가 중지 되었습니다")
 	lib.StopCron()
 	shutdownComponent(this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
 }
