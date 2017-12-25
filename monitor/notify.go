@@ -28,17 +28,17 @@ import (
 )
 
 const (
-	notifyAlarm = iota
-	notifyEvent
+	NotifyAlarm  = iota
+	NotifyEvent
 )
 
 type NotifyType uint8
 
 func (n NotifyType) String() string {
 	switch n {
-	case notifyAlarm:
+	case NotifyAlarm:
 		return "ALARM"
-	case notifyEvent:
+	case NotifyEvent:
 		return "EVENT"
 	}
 	return fmt.Sprintf("Unknown notify value : %d", n)

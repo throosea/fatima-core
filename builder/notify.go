@@ -36,9 +36,9 @@ import (
 )
 
 const (
-	APPLICATION_CODE = 0x1
-	LOGIC_MEASURE = 10
-	LOGIC_NOTIFY = 20
+	applicationCode = 0x1
+	logicMeasure    = 10
+	logicNotify     = 20
 )
 
 type DefaultSystemNotifyHandler struct {
@@ -79,8 +79,8 @@ func buildAlarmMessage(fatimaRuntime fatima.FatimaRuntime, level monitor.AlarmLe
 	body := make(map[string]interface{})
 
 
-	header["application_code"] = APPLICATION_CODE
-	header["logic"] = LOGIC_NOTIFY
+	header["application_code"] = applicationCode
+	header["logic"] = logicNotify
 
 	body["package_host"] = fatimaRuntime.GetPackaging().GetHost()
 	body["package_name"] = fatimaRuntime.GetPackaging().GetName()
@@ -90,7 +90,10 @@ func buildAlarmMessage(fatimaRuntime fatima.FatimaRuntime, level monitor.AlarmLe
 	body["event_time"] = lib.CurrentTimeMillis()
 
 	alarm := make(map[string]interface{})
-	alarm["type"] = "ALARM"
+	//alarm["type"] = "ALARM"
+	var notifyType monitor.NotifyType
+	notifyType = monitor.NotifyAlarm
+	alarm["type"] = notifyType.String()
 	alarm["timestamp"] = time.Now().Format("2006-01-02 15:04:05")
 	alarm["alarm_level"] = level.String()
 	alarm["from"] = "go-fatima"
@@ -118,8 +121,8 @@ func buildEventMessage(fatimaRuntime fatima.FatimaRuntime, message string, v ...
 	body := make(map[string]interface{})
 
 
-	header["application_code"] = APPLICATION_CODE
-	header["logic"] = LOGIC_NOTIFY
+	header["application_code"] = applicationCode
+	header["logic"] = logicNotify
 
 	body["package_host"] = fatimaRuntime.GetPackaging().GetHost()
 	body["package_name"] = fatimaRuntime.GetPackaging().GetName()
@@ -129,7 +132,10 @@ func buildEventMessage(fatimaRuntime fatima.FatimaRuntime, message string, v ...
 	body["event_time"] = lib.CurrentTimeMillis()
 
 	alarm := make(map[string]interface{})
-	alarm["type"] = "EVENT"
+	//alarm["type"] = "EVENT"
+	var notifyType monitor.NotifyType
+	notifyType = monitor.NotifyEvent
+	alarm["type"] = notifyType.String()
 	alarm["timestamp"] = time.Now().Format("2006-01-02 15:04:05")
 	alarm["from"] = "go-fatima"
 	alarm["initiator"] = "go-fatima"
@@ -184,8 +190,8 @@ func buildActivityMessage(fatimaRuntime fatima.FatimaRuntime, v interface{}) []b
 	body := make(map[string]interface{})
 
 
-	header["application_code"] = APPLICATION_CODE
-	header["logic"] = LOGIC_MEASURE
+	header["application_code"] = applicationCode
+	header["logic"] = logicMeasure
 
 	body["package_host"] = fatimaRuntime.GetPackaging().GetHost()
 	body["package_name"] = fatimaRuntime.GetPackaging().GetName()
