@@ -36,9 +36,9 @@ import (
 )
 
 const (
-	applicationCode = 0x1
-	logicMeasure    = 10
-	logicNotify     = 20
+	ApplicationCode = 0x1
+	LogicMeasure    = 10
+	LogicNotify     = 20
 )
 
 type DefaultSystemNotifyHandler struct {
@@ -79,8 +79,8 @@ func buildAlarmMessage(fatimaRuntime fatima.FatimaRuntime, level monitor.AlarmLe
 	body := make(map[string]interface{})
 
 
-	header["application_code"] = applicationCode
-	header["logic"] = logicNotify
+	header["application_code"] = ApplicationCode
+	header["logic"] = LogicNotify
 
 	body["package_host"] = fatimaRuntime.GetPackaging().GetHost()
 	body["package_name"] = fatimaRuntime.GetPackaging().GetName()
@@ -121,8 +121,8 @@ func buildEventMessage(fatimaRuntime fatima.FatimaRuntime, message string, v ...
 	body := make(map[string]interface{})
 
 
-	header["application_code"] = applicationCode
-	header["logic"] = logicNotify
+	header["application_code"] = ApplicationCode
+	header["logic"] = LogicNotify
 
 	body["package_host"] = fatimaRuntime.GetPackaging().GetHost()
 	body["package_name"] = fatimaRuntime.GetPackaging().GetName()
@@ -190,8 +190,8 @@ func buildActivityMessage(fatimaRuntime fatima.FatimaRuntime, v interface{}) []b
 	body := make(map[string]interface{})
 
 
-	header["application_code"] = applicationCode
-	header["logic"] = logicMeasure
+	header["application_code"] = ApplicationCode
+	header["logic"] = LogicMeasure
 
 	body["package_host"] = fatimaRuntime.GetPackaging().GetHost()
 	body["package_name"] = fatimaRuntime.GetPackaging().GetName()
