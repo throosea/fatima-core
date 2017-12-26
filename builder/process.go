@@ -36,6 +36,7 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"encoding/json"
 )
 
 const (
@@ -388,6 +389,9 @@ func init() {
 	log.Initialize(logPref)
 
 	log.Warn("%s 프로세스를 시작합니다", fatimaProcess.env.GetSystemProc().GetProgramName())
+
+	displayDeploymentInfo(fatimaProcess.env)
+
 	//if fatimaProcess.status == proc_status_shutdown {
 	//	log.Warn("%s 프로세스를 종료합니다", fatimaProcess.env.GetSystemProc().GetProgramName())
 	//}
@@ -421,4 +425,65 @@ func check(e error) {
 	if e != nil {
 		panic(fmt.Errorf("fail to build runtime : ", e))
 	}
+}
+
+const (
+	deploymentJsonFile = "deployment.json"
+)
+
+func displayDeploymentInfo(env fatima.FatimaEnv) {
+	deploymentFile := filepath.Join(env.GetFolderGuide().GetAppFolder(), deploymentJsonFile)
+	file, err := ioutil.ReadFile(deploymentFile)
+	if err != nil {
+		fmt.Printf("readfile err : %s\n", err.Error())
+		return
+	}
+
+	deployment := Deployment{}
+	err = json.Unmarshal(file, &deployment)
+	if err != nil {
+		fmt.Printf("json unmarshal err : %s\n", err.Error())
+		return
+	}
+
+	if deployment.HasBuildInfo() {
+		log.Info("패키지 빌드 시각 : %s", deployment.Build.BuildTime)
+		if deployment.Build.HasGit() {
+			log.Info("패키지 빌드 정보 (git) : %s", deployment.Build.Git)
+		}
+	}
+}
+
+type Deployment struct {
+	Process		string		`json:"process"`
+	ProcessType string		`json:"process,omitempty"`
+	Build 		DeploymentBuild `json:"build,omitempty"`
+}
+
+func (d Deployment) HasBuildInfo()	bool 	{
+	if len(d.Build.BuildTime) == 0 {
+		return false
+	}
+	return true
+}
+
+type DeploymentBuild struct {
+	Git			DeploymentBuildGit `json:"git,omitempty"`
+	BuildTime 	string		`json:"time,omitempty"`
+}
+
+func (d DeploymentBuild) HasGit()	bool 	{
+	if len(d.Git.Branch) == 0 {
+		return false
+	}
+	return true
+}
+
+type DeploymentBuildGit struct {
+	Branch		string		`json:"branch"`
+	Commit		string		`json:"commit"`
+}
+
+func (d DeploymentBuildGit) String()	string 	{
+	return fmt.Sprintf("Branch=[%s], Commit=[%s]", d.Branch, d.Commit)
 }
