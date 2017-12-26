@@ -446,6 +446,7 @@ func displayDeploymentInfo(env fatima.FatimaEnv) {
 		return
 	}
 
+	log.Info("process : %s", deployment.Process)
 	if deployment.HasBuildInfo() {
 		log.Info("패키지 빌드 시각 : %s", deployment.Build.BuildTime)
 		if deployment.Build.HasGit() {
