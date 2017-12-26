@@ -446,18 +446,17 @@ func displayDeploymentInfo(env fatima.FatimaEnv) {
 		return
 	}
 
-	log.Info("process : %s", deployment.Process)
 	if deployment.HasBuildInfo() {
 		log.Info("패키지 빌드 시각 : %s", deployment.Build.BuildTime)
 		if deployment.Build.HasGit() {
-			log.Info("패키지 빌드 정보 (git) : %s", deployment.Build.Git)
+			log.Info("패키지 빌드 (git) : %s", deployment.Build.Git)
 		}
 	}
 }
 
 type Deployment struct {
 	Process		string		`json:"process"`
-	ProcessType string		`json:"process,omitempty"`
+	ProcessType string		`json:"process_type,omitempty"`
 	Build 		DeploymentBuild `json:"build,omitempty"`
 }
 
