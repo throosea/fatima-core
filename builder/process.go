@@ -447,6 +447,9 @@ func displayDeploymentInfo(env fatima.FatimaEnv) {
 	}
 
 	if deployment.HasBuildInfo() {
+		if len(deployment.Build.BuildUser) > 0 {
+			log.Info("패키지 빌드 사용자 : %s", deployment.Build.BuildUser)
+		}
 		log.Info("패키지 빌드 시각 : %s", deployment.Build.BuildTime)
 		if deployment.Build.HasGit() {
 			log.Info("패키지 빌드 (git) : %s", deployment.Build.Git)
@@ -470,6 +473,7 @@ func (d Deployment) HasBuildInfo()	bool 	{
 type DeploymentBuild struct {
 	Git			DeploymentBuildGit `json:"git,omitempty"`
 	BuildTime 	string		`json:"time,omitempty"`
+	BuildUser 	string		`json:"user,omitempty"`
 }
 
 func (d DeploymentBuild) HasGit()	bool 	{
