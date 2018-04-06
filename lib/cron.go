@@ -65,6 +65,7 @@ const (
 	configPrefix = "cron."
 	configSuffixSpec = ".spec"
 	configSuffixDesc = ".desc"
+	configSuffixRunUnique = ".rununique"
 )
 
 var (
@@ -74,6 +75,8 @@ var (
 	fatimaRuntime		fatima.FatimaRuntime
 	oneSecondTick		*time.Ticker
 	lastRerunModifiedTime time.Time
+	jobRunningMutex		= sync.Mutex{}
+	runningCronJobs		= make(map[string]struct{})
 
 	errInvalidConfig = errors.New("invalid fatima config")
 )
@@ -83,15 +86,28 @@ type CronJob struct {
 	desc			string
 	spec			string
 	args			[]string
+	runUnique		bool
 	runnable		func(string, fatima.FatimaRuntime, ...string)
 }
 
 func (c CronJob) Run() {
+	if c.runUnique {
+		jobRunningMutex.Lock()
+		defer jobRunningMutex.Unlock()
+		_, ok := runningCronJobs[c.name]
+		if ok {
+			log.Warn("job %s is running", c.name)
+			return
+		}
+		runningCronJobs[c.name] = struct{}{}
+	}
+
 	log.Info("start job [%s]", c.name)
 	defer func() {
 		if r := recover(); r != nil {
 			log.Error("panic to execute : %s", r)
 		}
+		delete(runningCronJobs, c.name)
 	}()
 
 	startMillis := CurrentTimeMillis()
@@ -100,6 +116,7 @@ func (c CronJob) Run() {
 
 	log.Info("cron job [%s] elapsed %d milli seconds", c.name, endMillis - startMillis)
 }
+
 
 
 func StartCron() {
@@ -179,14 +196,23 @@ func ensureSingleCronInstance(runtime fatima.FatimaRuntime) {
 }
 
 func newCronJob(config fatima.Config, name string, runnable func(string, fatima.FatimaRuntime, ...string)) (*CronJob, error) {
-	specKey := fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixSpec)
-	spec, ok := config.GetValue(specKey)
+	key := fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixSpec)
+	spec, ok := config.GetValue(key)
 	if !ok {
-		return nil, errors.New("insufficient config key " + specKey)
+		return nil, errors.New("insufficient config key " + key)
 	}
 
-	descKey := fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixDesc)
-	desc, ok := config.GetValue(descKey)
+	key = fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixDesc)
+	desc, ok := config.GetValue(key)
+	if !ok {
+		desc = name
+	}
+
+	key = fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixRunUnique)
+	unique, err := config.GetBool(key)
+	if err != nil {
+		unique = true
+	}
 	if !ok {
 		desc = name
 	}
@@ -196,6 +222,7 @@ func newCronJob(config fatima.Config, name string, runnable func(string, fatima.
 	job.desc = desc
 	job.spec = spec
 	job.runnable = runnable
+	job.runUnique = unique
 	return job, nil
 }
 
