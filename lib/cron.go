@@ -91,15 +91,8 @@ type CronJob struct {
 }
 
 func (c CronJob) Run() {
-	if c.runUnique {
-		jobRunningMutex.Lock()
-		defer jobRunningMutex.Unlock()
-		_, ok := runningCronJobs[c.name]
-		if ok {
-			log.Warn("job %s is running", c.name)
-			return
-		}
-		runningCronJobs[c.name] = struct{}{}
+	if !c.canRunnable() {
+		return
 	}
 
 	log.Info("start job [%s]", c.name)
@@ -117,7 +110,21 @@ func (c CronJob) Run() {
 	log.Info("cron job [%s] elapsed %d milli seconds", c.name, endMillis - startMillis)
 }
 
+func (c CronJob) canRunnable() bool {
+	if !c.runUnique {
+		return true
+	}
 
+	jobRunningMutex.Lock()
+	defer jobRunningMutex.Unlock()
+	_, ok := runningCronJobs[c.name]
+	if ok {
+		log.Warn("job %s is running", c.name)
+		return false
+	}
+	runningCronJobs[c.name] = struct{}{}
+	return true
+}
 
 func StartCron() {
 	if cron == nil {
