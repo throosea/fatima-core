@@ -36,6 +36,7 @@ import (
 	"throosea.com/fatima"
 	"throosea.com/log"
 	"bytes"
+	"sort"
 )
 
 type ProcessItem struct {
@@ -86,6 +87,12 @@ type GroupItem struct {
 	Name string `yaml:"name"`
 }
 
+type GroupItems []GroupItem
+
+func (a GroupItems) Len() int           { return len(a) }
+func (a GroupItems) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a GroupItems) Less(i, j int) bool { return a[i].Id < a[j].Id }
+
 type YamlFatimaPackageConfig struct {
 	env       fatima.FatimaEnv
 	predefines fatima.Predefines
@@ -98,6 +105,29 @@ func NewYamlFatimaPackageConfig(env fatima.FatimaEnv) *YamlFatimaPackageConfig {
 	instance.env = env
 	instance.Reload()
 	return instance
+}
+
+func (y *YamlFatimaPackageConfig) OrderByGroup() {
+	ordered := make([]ProcessItem, 0)
+
+	sort.Sort(GroupItems(y.Groups))
+
+	// pickup OPM first
+	for _, v := range y.Processes {
+		if v.Gid == 1 {
+			ordered = append(ordered, v)
+		}
+	}
+
+	for i:=1; i<len(y.Groups); i++ {
+		for _, v := range y.Processes {
+			if v.Gid == y.Groups[i].Id {
+				ordered = append(ordered, v)
+			}
+		}
+	}
+
+	y.Processes = ordered
 }
 
 func (y *YamlFatimaPackageConfig) Save() {
