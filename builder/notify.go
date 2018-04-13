@@ -62,7 +62,11 @@ func NewDefaultSystemNotifyHandler(fatimaRuntime fatima.FatimaRuntime) (monitor.
 }
 
 func (s *DefaultSystemNotifyHandler) SendAlarm(level monitor.AlarmLevel, message string) {
-	s.mbus.Write(buildAlarmMessage(s.fatimaRuntime, level, message))
+	s.mbus.Write(buildAlarmMessage(s.fatimaRuntime, level, message, ""))
+}
+
+func (s *DefaultSystemNotifyHandler) SendAlarmWithCategory(level monitor.AlarmLevel, message string, category string) {
+	s.mbus.Write(buildAlarmMessage(s.fatimaRuntime, level, message, category))
 }
 
 func (s *DefaultSystemNotifyHandler) SendEvent(message string, v ...interface{}) {
@@ -73,7 +77,7 @@ func (s *DefaultSystemNotifyHandler) SendActivity(json interface{}) {
 	s.mbus.Write(buildActivityMessage(s.fatimaRuntime, json))
 }
 
-func buildAlarmMessage(fatimaRuntime fatima.FatimaRuntime, level monitor.AlarmLevel, message string) []byte {
+func buildAlarmMessage(fatimaRuntime fatima.FatimaRuntime, level monitor.AlarmLevel, message string, category string) []byte {
 	m := make(map[string]interface{})
 	header := make(map[string]interface{})
 	body := make(map[string]interface{})
@@ -99,6 +103,10 @@ func buildAlarmMessage(fatimaRuntime fatima.FatimaRuntime, level monitor.AlarmLe
 	alarm["from"] = "go-fatima"
 	alarm["initiator"] = "go-fatima"
 	alarm["message"] = message
+
+	if len(category) > 0 {
+		alarm["category"] = category
+	}
 
 	body["message"] = alarm
 

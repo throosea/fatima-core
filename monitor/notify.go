@@ -66,6 +66,7 @@ func (al AlarmLevel) String() string {
 
 type SystemNotifyHandler interface {
 	SendAlarm(level AlarmLevel, message string)
+	SendAlarmWithCategory(level AlarmLevel, message string, category string)
 	SendActivity(json interface{})
 	SendEvent(message string, v ...interface{})
 }
