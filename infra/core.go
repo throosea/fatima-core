@@ -31,6 +31,7 @@ import (
 	"net/http"
 	"throosea.com/log"
 	"throosea.com/fatima/lib"
+	"fmt"
 )
 
 type ProcessCoreWorker interface {
@@ -111,7 +112,9 @@ func (this *DefaultProcessInteractor) Run() {
 	bootupNotify()
 	this.pprofService()
 	//this.runtimeProcess.GetSystemNotifyHandler().SendEvent("프로세스가 시작 되었습니다")
-	this.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlarmLevelMinor, "프로세스가 시작 되었습니다")
+	this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName()
+	message := fmt.Sprintf("%s 프로세스가 시작되었습니다", this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
+	this.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlarmLevelMinor, message)
 }
 
 func (this *DefaultProcessInteractor) Stop() {
@@ -119,7 +122,8 @@ func (this *DefaultProcessInteractor) Stop() {
 }
 
 func (this *DefaultProcessInteractor) Shutdown() {
-	this.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlamLevelMajor, "프로세스가 중지 되었습니다")
+	message := fmt.Sprintf("%s 프로세스가 중지되었습니다", this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
+	this.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlamLevelMajor, message)
 	lib.StopCron()
 	shutdownComponent(this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
 }
