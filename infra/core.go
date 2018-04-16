@@ -111,10 +111,10 @@ func (this *DefaultProcessInteractor) Run() {
 	lib.StartCron()
 	bootupNotify()
 	this.pprofService()
-	//this.runtimeProcess.GetSystemNotifyHandler().SendEvent("프로세스가 시작 되었습니다")
-	this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName()
-	message := fmt.Sprintf("%s 프로세스가 시작되었습니다", this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
-	this.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlarmLevelMinor, message)
+	if this.runtimeProcess.GetBuilder().GetProcessType() == fatima.PROCESS_TYPE_GENERAL {
+		message := fmt.Sprintf("%s 프로세스가 시작되었습니다", this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
+		this.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlarmLevelMinor, message)
+	}
 }
 
 func (this *DefaultProcessInteractor) Stop() {
@@ -122,8 +122,10 @@ func (this *DefaultProcessInteractor) Stop() {
 }
 
 func (this *DefaultProcessInteractor) Shutdown() {
-	message := fmt.Sprintf("%s 프로세스가 중지되었습니다", this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
-	this.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlamLevelMajor, message)
+	if this.runtimeProcess.GetBuilder().GetProcessType() == fatima.PROCESS_TYPE_GENERAL {
+		message := fmt.Sprintf("%s 프로세스가 중지되었습니다", this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
+		this.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlamLevelMajor, message)
+	}
 	lib.StopCron()
 	shutdownComponent(this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
 }
