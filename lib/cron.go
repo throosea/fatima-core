@@ -162,21 +162,36 @@ func registerCronjobCommandsToJuno()	{
 		return
 	}
 
-	cronCommands := make(map[string]interface{})
+	processCommand := make(map[string]interface{})
+	processCommand["process"] = fatimaRuntime.GetEnv().GetSystemProc().GetProgramName()
+	cronCommands := make([]interface{}, 0)
 
 	/*
-batmeta.crons :
-{ "dailymusicmeta" : { "desc" : "aaaa", "sample" : "bbb" }
-
+		{
+			"process" : "batmeta",
+			"jobs" : [
+				{
+					"name" : "dailymusicmeta",
+					"desc" : "일별 음원 메타파일 동기화",
+					"sample":"yyyyMMdd (e.g}"}
+				},
+				{
+					"name" : "hourlymusicmeta",
+					"desc" : "시간별 음원 메타파일 동기화",
+					"sample":"yyyyMMdd HH (e.g 20170701 13)"
+				}
+			]
+		},
 	 */
 	for _, job := range cronJobList {
-		cronDesc := make(map[string]string)
-		cronDesc["desc"] = job.desc
-		cronDesc["sample"] = job.sample
-		cronCommands[job.name] = cronDesc
+		command := make(map[string]string)
+		command["name"] = job.name
+		command["desc"] = job.desc
+		command["sample"] = job.sample
+		cronCommands = append(cronCommands, command)
 	}
-
-	b, _ := json.Marshal(cronCommands)
+	processCommand["jobs"] = cronCommands
+	b, _ := json.Marshal(processCommand)
 
 	dir := filepath.Join(fatimaRuntime.GetEnv().GetFolderGuide().GetFatimaHome(),
 			"data",
