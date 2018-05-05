@@ -58,6 +58,7 @@ import (
 	"time"
 	"io/ioutil"
 	"strings"
+	"encoding/json"
 )
 
 const (
@@ -65,6 +66,7 @@ const (
 	configPrefix = "cron."
 	configSuffixSpec = ".spec"
 	configSuffixDesc = ".desc"
+	configSuffixSample = ".sample"
 	configSuffixRunUnique = ".rununique"
 )
 
@@ -86,6 +88,7 @@ type CronJob struct {
 	desc			string
 	spec			string
 	args			[]string
+	sample 			string
 	runUnique		bool
 	runnable		func(string, fatima.FatimaRuntime, ...string)
 }
@@ -135,6 +138,8 @@ func StartCron() {
 		return
 	}
 
+	registerCronjobCommandsToJuno()
+
 	log.Info("total %d cron jobs scheduled", len(cron.Entries()))
 	cron.Start()
 }
@@ -152,9 +157,59 @@ func StopCron() {
 	}
 }
 
-func Rerun(jobDescription string)	{
-	log.Info("try to rerun job [%s]", jobDescription)
-	jobArgs := strings.Split(jobDescription, " ")
+func registerCronjobCommandsToJuno()	{
+	if len(cronJobList) == 0 {
+		return
+	}
+
+	cronCommands := make(map[string]interface{})
+
+	/*
+batmeta.crons :
+{ "dailymusicmeta" : { "desc" : "aaaa", "sample" : "bbb" }
+
+	 */
+	for _, job := range cronJobList {
+		cronDesc := make(map[string]string)
+		cronDesc["desc"] = job.desc
+		cronDesc["sample"] = job.sample
+		cronCommands[job.name] = cronDesc
+	}
+
+	b, _ := json.Marshal(cronCommands)
+
+	dir := filepath.Join(fatimaRuntime.GetEnv().GetFolderGuide().GetFatimaHome(),
+			"data",
+			"juno",
+			"crons")
+
+	err := ensureDirectory(dir)
+	if err != nil {
+		log.Warn("fail to register cron commands to juno : %s", err.Error())
+		return
+	}
+
+	file := filepath.Join(dir, fatimaRuntime.GetEnv().GetSystemProc().GetProgramName() + ".json")
+	err = ioutil.WriteFile(file, b, 0644)
+	if err != nil {
+		log.Warn("fail to write cron commands to juno : %s", err.Error())
+		return
+	}
+}
+
+func ensureDirectory(dir string) error {
+	if _, err := os.Stat(dir); err != nil {
+		if os.IsNotExist(err) {
+			return os.MkdirAll(dir, 0755)
+		}
+	}
+
+	return nil
+}
+
+func Rerun(jobNameAndArgs string)	{
+	log.Info("try to rerun job [%s]", jobNameAndArgs)
+	jobArgs := strings.Split(jobNameAndArgs, " ")
 	jobName := jobArgs[0]
 	for _, job := range cronJobList {
 		if job.name == jobName {
@@ -215,6 +270,9 @@ func newCronJob(config fatima.Config, name string, runnable func(string, fatima.
 		desc = name
 	}
 
+	key = fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixSample)
+	sample, ok := config.GetValue(key)
+
 	key = fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixRunUnique)
 	unique, err := config.GetBool(key)
 	if err != nil {
@@ -228,6 +286,7 @@ func newCronJob(config fatima.Config, name string, runnable func(string, fatima.
 	job.name = name
 	job.desc = desc
 	job.spec = spec
+	job.sample = strings.TrimSpace(sample)
 	job.runnable = runnable
 	job.runUnique = unique
 	return job, nil
@@ -264,9 +323,9 @@ func scanRerunFile() {
 		return
 	}
 
-	jobName := strings.Trim(string(data), "\r\n ")
-	if len(jobName) > 0 {
-		Rerun(jobName)
+	jobNameAndArgs := strings.Trim(string(data), "\r\n ")
+	if len(jobNameAndArgs) > 0 {
+		Rerun(jobNameAndArgs)
 		clearRerunFile()
 	}
 }
