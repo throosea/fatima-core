@@ -293,9 +293,6 @@ func newCronJob(config fatima.Config, name string, runnable func(string, fatima.
 	if err != nil {
 		unique = true
 	}
-	if !ok {
-		desc = name
-	}
 
 	job := &CronJob{}
 	job.name = name
