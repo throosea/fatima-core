@@ -66,6 +66,10 @@ type StreamData struct {
 	mmap       *lib.Mmap
 }
 
+func (r *StreamData) String() string {
+	return fmt.Sprintf("collection=[%s], name=[%s]", r.collection, r.name)
+}
+
 func (r *StreamData) Close() error {
 	if r.mmap != nil {
 		return r.mmap.Close()

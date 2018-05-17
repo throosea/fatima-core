@@ -64,10 +64,12 @@ func (m *MappedMBus) Write(bytes []byte) error {
 		newCord := Coordinates{nextSeq, 0}
 		streamData, err := prepareStreamDataFile(m.dir, m.collection, m.stream, newCord)
 		if err != nil {
+			log.Warn("fail to prepare next data file : %s", err.Error())
 			return err
 		}
 		m.data = streamData
 		m.xy = newCord
+		log.Debug("new coordinate : %s", m.xy)
 		m.markEOFToPreviousFile(oldData, lastPos)
 		oldData.Close()
 	}
@@ -108,7 +110,13 @@ func prepareStreamDataFile(dir string, collection string, stream string, newCord
 	// streamDataFileSize
 	mm, err := lib.NewMmap(path, streamDataFileSize)
 	if err != nil {
-		return nil, fmt.Errorf("fail to open new mmap : %s", err.Error())
+		log.Warn("fail to open new mmap : %s", err.Error())
+		log.Warn("remove file and retry one more : %s", path)
+		os.Remove(path)
+		mm, err = lib.NewMmap(path, streamDataFileSize)
+		if err != nil {
+			return nil, fmt.Errorf("fail to open new mmap : %s", err.Error())
+		}
 	}
 
 	data := new(StreamData)
