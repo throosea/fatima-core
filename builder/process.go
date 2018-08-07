@@ -336,7 +336,11 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 	// remove old output files
 	files, _ := filepath.Glob(fmt.Sprintf("%s%c%s.*.output", procFolder, filepath.Separator, proc.GetName()))
 	for _, v := range files {
-		os.Remove(v)
+		if getFileSize(v) > 0 {
+			os.Rename(v, fmt.Sprintf("%s.old", v))
+		} else {
+			os.Remove(v)
+		}
 	}
 
 	// remove old pid files
@@ -361,6 +365,14 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 		os.Stdout = outfile
 		os.Stderr = outfile
 	}
+}
+
+func getFileSize(p string) int 	{
+	fi, e := os.Stat(p);
+	if e != nil {
+		return 0
+	}
+	return int(fi.Size())
 }
 
 func init() {
