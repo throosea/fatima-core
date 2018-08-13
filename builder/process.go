@@ -362,8 +362,11 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 				fmt.Sprintf("%s.%d.output", process.env.GetSystemProc().GetProgramName(), process.env.GetSystemProc().GetPid())))
 		check(err)
 
-		os.Stdout = outfile
-		os.Stderr = outfile
+		//os.Stdout = outfile
+		//os.Stderr = outfile
+
+		syscall.Dup2(int(outfile.Fd()), 1)	// stdout
+		syscall.Dup2(int(outfile.Fd()), 2)	// stderr
 	}
 }
 
