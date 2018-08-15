@@ -103,6 +103,8 @@ func (c CronJob) Run() {
 		if r := recover(); r != nil {
 			log.Error("panic to execute : %s", r)
 		}
+		jobRunningMutex.Lock()
+		defer jobRunningMutex.Unlock()
 		delete(runningCronJobs, c.name)
 	}()
 
