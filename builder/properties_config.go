@@ -45,20 +45,27 @@ func NewPropertyConfigReader(env fatima.FatimaEnv, predefines fatima.Predefines)
 	instance.predefines = predefines
 	instance.configuration = make(map[string]string)
 
-	var filename = ""
-	var propFilePath = ""
-	if env.GetProfile() == "" {
-		filename = fmt.Sprintf("%s.properties", env.GetSystemProc().GetProgramName())
-	} else {
-		filename = fmt.Sprintf("%s.%s.properties", env.GetSystemProc().GetProgramName(), env.GetProfile())
+	var propFilePath = loadApplicationProperties(env)
+	if len(propFilePath) == 0 {
+		propFilePath = loadAppNameProperties(env)
 	}
-	propFilePath = filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
-	if !checkFileAvailable(propFilePath) && env.GetProfile() != "" {
-		filename = fmt.Sprintf("%s.properties", env.GetSystemProc().GetProgramName())
-		propFilePath = filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
+	if len(propFilePath) == 0 {
+		propFilePath = loadBasicApplicationProperties(env)
+	}
+	if len(propFilePath) == 0 {
+		propFilePath = loadBasicAppNameProperties(env)
+	}
+	if len(propFilePath) == 0 {
+		log.Warn("cannot load properties file...")
+		return instance
 	}
 
-	log.Info("using properties file : %s", filename)
+	//if !checkFileAvailable(propFilePath) && env.GetProfile() != "" {
+	//	filename = fmt.Sprintf("%s.properties", env.GetSystemProc().GetProgramName())
+	//	propFilePath = filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
+	//}
+
+	log.Info("using properties file : %s", filepath.Base(propFilePath))
 	props, err := readProperties(propFilePath)
 	if err != nil {
 		log.Warn("cannot load properties file : %s", err.Error())
@@ -69,6 +76,54 @@ func NewPropertyConfigReader(env fatima.FatimaEnv, predefines fatima.Predefines)
 		}
 	}
 	return instance
+}
+
+func loadApplicationProperties(env fatima.FatimaEnv) string {
+	var filename = ""
+	var propFilePath = ""
+	if env.GetProfile() == "" {
+		filename = fmt.Sprintf("application.properties")
+	} else {
+		filename = fmt.Sprintf("application.%s.properties", env.GetProfile())
+	}
+	propFilePath = filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
+	if !checkFileAvailable(propFilePath) {
+		return ""
+	}
+	return propFilePath
+}
+
+func loadAppNameProperties(env fatima.FatimaEnv) string {
+	var filename = ""
+	var propFilePath = ""
+	if env.GetProfile() == "" {
+		filename = fmt.Sprintf("%s.properties", env.GetSystemProc().GetProgramName())
+	} else {
+		filename = fmt.Sprintf("%s.%s.properties", env.GetSystemProc().GetProgramName(), env.GetProfile())
+	}
+	propFilePath = filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
+	if !checkFileAvailable(propFilePath) {
+		return ""
+	}
+	return propFilePath
+}
+
+func loadBasicApplicationProperties(env fatima.FatimaEnv) string {
+	filename := fmt.Sprintf("application.properties")
+	propFilePath := filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
+	if !checkFileAvailable(propFilePath) {
+		return ""
+	}
+	return propFilePath
+}
+
+func loadBasicAppNameProperties(env fatima.FatimaEnv) string {
+	filename := fmt.Sprintf("%s.properties", env.GetSystemProc().GetProgramName())
+	propFilePath := filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
+	if !checkFileAvailable(propFilePath) {
+		return ""
+	}
+	return propFilePath
 }
 
 func (this *PropertyConfigReader) GetValue(key string) (string, bool) {
