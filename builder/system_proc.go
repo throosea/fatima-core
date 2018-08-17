@@ -29,6 +29,7 @@ import (
 	"strconv"
 	"throosea.com/fatima"
 	"strings"
+	"fmt"
 )
 
 type FatimaSystemProc struct {
@@ -86,11 +87,14 @@ func newSystemProc() fatima.SystemProc {
 
 const debugappStr = "-debugapp="
 func getDebugAppName() string {
+	fmt.Printf("len args : %d\n", len(os.Args))
 	if len(os.Args) == 1 {
 		return ""
 	}
 
 	param := os.Args[1]
+	fmt.Printf("param : [%s]\n", param)
+	fmt.Printf("debugappStr : [%s]\n", debugappStr)
 	if strings.HasPrefix(param, debugappStr) {
 		return param[len(debugappStr):]
 	}
