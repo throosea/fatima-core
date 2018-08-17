@@ -27,8 +27,8 @@ import (
 	"os"
 	"os/user"
 	"strconv"
-	"strings"
 	"throosea.com/fatima"
+	"strings"
 )
 
 type FatimaSystemProc struct {
@@ -74,18 +74,44 @@ func newSystemProc() fatima.SystemProc {
 	proc.homeDir = systemUser.HomeDir
 	proc.gid = systemUser.Gid
 
-	args0 := os.Args[0]
-	lastIndex := strings.LastIndex(os.Args[0], "/")
-	if lastIndex >= 0 {
-		proc.programName = args0[lastIndex+1:]
+	debugAppName := getDebugAppName()
+	if len(debugAppName) > 0 {
+		proc.programName = debugAppName
 	} else {
-		proc.programName = os.Args[0]
-	}
-
-	firstIndex := strings.Index(proc.programName, " ")
-	if firstIndex > 0 {
-		proc.programName = proc.programName[:firstIndex]
+		proc.programName = getProgramName()
 	}
 
 	return proc
+}
+
+const debugappStr = "-debugapp="
+func getDebugAppName() string {
+	if len(os.Args) == 1 {
+		return ""
+	}
+
+	param := os.Args[1]
+	if param == debugappStr {
+		return param[len(debugappStr):]
+	}
+
+	return ""
+}
+
+func getProgramName() string {
+	var procName string
+	args0 := os.Args[0]
+	lastIndex := strings.LastIndex(os.Args[0], "/")
+	if lastIndex >= 0 {
+		procName = args0[lastIndex+1:]
+	} else {
+		procName = os.Args[0]
+	}
+
+	firstIndex := strings.Index(procName, " ")
+	if firstIndex > 0 {
+		procName = procName[:firstIndex]
+	}
+
+	return procName
 }
