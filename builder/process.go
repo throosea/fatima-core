@@ -399,7 +399,7 @@ func init() {
 		os.Exit(0)
 	}
 
-	logPref := log.NewPreference(fatimaProcess.env.GetFolderGuide().GetLogFolder())
+	logPref := log.NewPreferenceWithProcName(fatimaProcess.env.GetFolderGuide().GetLogFolder(), fatimaProcess.env.GetSystemProc().GetProgramName())
 	logPref.DeliveryMode = log.DELIVERY_MODE_ASYNC
 	log.Initialize(logPref)
 
