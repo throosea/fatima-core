@@ -90,9 +90,10 @@ func getDebugAppName() string {
 		return ""
 	}
 
-	param := os.Args[1]
-	if strings.HasPrefix(param, debugappStr) {
-		return param[len(debugappStr):]
+	for _, v := range os.Args[1:]	{
+		if strings.HasPrefix(v, debugappStr) {
+			return v[len(debugappStr):]
+		}
 	}
 
 	return ""

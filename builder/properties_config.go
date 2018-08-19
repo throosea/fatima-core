@@ -45,25 +45,11 @@ func NewPropertyConfigReader(env fatima.FatimaEnv, predefines fatima.Predefines)
 	instance.predefines = predefines
 	instance.configuration = make(map[string]string)
 
-	var propFilePath = loadApplicationProperties(env)
-	if len(propFilePath) == 0 {
-		propFilePath = loadAppNameProperties(env)
-	}
-	if len(propFilePath) == 0 {
-		propFilePath = loadBasicApplicationProperties(env)
-	}
-	if len(propFilePath) == 0 {
-		propFilePath = loadBasicAppNameProperties(env)
-	}
+	propFilePath := loadApplicationProperty(env)
 	if len(propFilePath) == 0 {
 		log.Warn("cannot load properties file...")
 		return instance
 	}
-
-	//if !checkFileAvailable(propFilePath) && env.GetProfile() != "" {
-	//	filename = fmt.Sprintf("%s.properties", env.GetSystemProc().GetProgramName())
-	//	propFilePath = filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
-	//}
 
 	log.Info("using properties file : %s", filepath.Base(propFilePath))
 	props, err := readProperties(propFilePath)
@@ -76,6 +62,26 @@ func NewPropertyConfigReader(env fatima.FatimaEnv, predefines fatima.Predefines)
 		}
 	}
 	return instance
+}
+
+func loadApplicationProperty(env fatima.FatimaEnv) string {
+	list := make([]string, 0)
+	if env.GetProfile() != "" {
+		list = append(list, fmt.Sprintf("%s.%s.properties", env.GetSystemProc().GetProgramName(), env.GetProfile()))
+		list = append(list, fmt.Sprintf("application.%s.properties", env.GetProfile()))
+	}
+
+	list = append(list, fmt.Sprintf("%s.properties", env.GetSystemProc().GetProgramName()))
+	list = append(list, "application.properties")
+
+	for _, v := range list {
+		propFilePath := filepath.Join(env.GetFolderGuide().GetAppFolder(), v)
+		if checkFileAvailable(propFilePath) {
+			return propFilePath
+		}
+	}
+
+	return ""
 }
 
 func loadApplicationProperties(env fatima.FatimaEnv) string {
