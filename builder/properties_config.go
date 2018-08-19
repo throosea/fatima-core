@@ -84,54 +84,6 @@ func loadApplicationProperty(env fatima.FatimaEnv) string {
 	return ""
 }
 
-func loadApplicationProperties(env fatima.FatimaEnv) string {
-	var filename = ""
-	var propFilePath = ""
-	if env.GetProfile() == "" {
-		filename = fmt.Sprintf("application.properties")
-	} else {
-		filename = fmt.Sprintf("application.%s.properties", env.GetProfile())
-	}
-	propFilePath = filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
-	if !checkFileAvailable(propFilePath) {
-		return ""
-	}
-	return propFilePath
-}
-
-func loadAppNameProperties(env fatima.FatimaEnv) string {
-	var filename = ""
-	var propFilePath = ""
-	if env.GetProfile() == "" {
-		filename = fmt.Sprintf("%s.properties", env.GetSystemProc().GetProgramName())
-	} else {
-		filename = fmt.Sprintf("%s.%s.properties", env.GetSystemProc().GetProgramName(), env.GetProfile())
-	}
-	propFilePath = filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
-	if !checkFileAvailable(propFilePath) {
-		return ""
-	}
-	return propFilePath
-}
-
-func loadBasicApplicationProperties(env fatima.FatimaEnv) string {
-	filename := fmt.Sprintf("application.properties")
-	propFilePath := filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
-	if !checkFileAvailable(propFilePath) {
-		return ""
-	}
-	return propFilePath
-}
-
-func loadBasicAppNameProperties(env fatima.FatimaEnv) string {
-	filename := fmt.Sprintf("%s.properties", env.GetSystemProc().GetProgramName())
-	propFilePath := filepath.Join(env.GetFolderGuide().GetAppFolder(), filename)
-	if !checkFileAvailable(propFilePath) {
-		return ""
-	}
-	return propFilePath
-}
-
 func (this *PropertyConfigReader) GetValue(key string) (string, bool) {
 	v, ok := this.configuration[key]
 	return v, ok
@@ -174,8 +126,6 @@ func (this *PropertyConfigReader) GetBool(key string) (bool, error) {
 
 	return false, nil
 }
-
-
 
 
 func (this *PropertyConfigReader) ResolvePredefine(value string) string {
