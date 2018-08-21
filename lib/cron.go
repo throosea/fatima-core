@@ -17,7 +17,7 @@
 // under the License.
 //
 // @project fatima
-// @author 1100282
+// @author DeockJin Chung (jin.freestyle@gmail.com)
 // @date 2017. 5. 11. AM 8:50
 //
 
@@ -168,23 +168,6 @@ func registerCronjobCommandsToJuno()	{
 	processCommand["process"] = fatimaRuntime.GetEnv().GetSystemProc().GetProgramName()
 	cronCommands := make([]interface{}, 0)
 
-	/*
-		{
-			"process" : "batmeta",
-			"jobs" : [
-				{
-					"name" : "dailymusicmeta",
-					"desc" : "일별 음원 메타파일 동기화",
-					"sample":"yyyyMMdd (e.g}"}
-				},
-				{
-					"name" : "hourlymusicmeta",
-					"desc" : "시간별 음원 메타파일 동기화",
-					"sample":"yyyyMMdd HH (e.g 20170701 13)"
-				}
-			]
-		},
-	 */
 	for _, job := range cronJobList {
 		command := make(map[string]string)
 		command["name"] = job.name

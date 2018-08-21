@@ -48,11 +48,6 @@ func (this *SystemMeasureManagement) registUnit(unit monitor.SystemMeasurable) {
 	this.units = append(this.units, unit)
 }
 
-// 5초에 1번씩 호출된다
-// 1분에 1번씩은 saturn으로 보내자
-// saturn 입장에서 7일동안 전송이 없는 프로세스는 파일을 제거하기 때문에
-// 주기적으로 메시지를 보내주어야 할 필요가 있다
-// 이 부분은 추후 개선되어야 한다
 var measureTick uint64 = 0
 func (this *SystemMeasureManagement) Process() {
 	msr := measurement{eventTime: time.Now()}

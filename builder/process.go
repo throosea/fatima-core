@@ -204,7 +204,7 @@ func (process *FatimaRuntimeProcess) Run() {
 	}()
 
 	if !process.interactor.Initialize() {
-		log.Warn("프로세스 초기화에 실패하였습니다. %s 프로그램을 종료합니다", process.env.GetSystemProc().GetProgramName())
+		log.Warn("fail to initialize process. shutdown %s", process.env.GetSystemProc().GetProgramName())
 		log.Close()
 		return
 	}
@@ -269,7 +269,7 @@ func (process *FatimaRuntimeProcess) Initialize(builder FatimaRuntimeBuilder)  {
 	process.logLevel = pkgProc.GetLogLevel()
 	if process.logLevel != log.GetLevel() {
 		log.SetLevel(process.logLevel)
-		log.Info("로그레벨을 변경합니다 : %s", process.logLevel)
+		log.Info("change log level : %s", process.logLevel)
 	}
 
 	process.parepareProcFolder(pkgProc, builder.GetProcessType())
@@ -403,13 +403,9 @@ func init() {
 	logPref.DeliveryMode = log.DELIVERY_MODE_ASYNC
 	log.Initialize(logPref)
 
-	log.Warn("%s 프로세스를 시작합니다", fatimaProcess.env.GetSystemProc().GetProgramName())
+	log.Warn("%s is starting", fatimaProcess.env.GetSystemProc().GetProgramName())
 
 	displayDeploymentInfo(fatimaProcess.env)
-
-	//if fatimaProcess.status == proc_status_shutdown {
-	//	log.Warn("%s 프로세스를 종료합니다", fatimaProcess.env.GetSystemProc().GetProgramName())
-	//}
 }
 
 func newFatimaProcessEnv() *FatimaProcessEnv {
@@ -463,11 +459,11 @@ func displayDeploymentInfo(env fatima.FatimaEnv) {
 
 	if deployment.HasBuildInfo() {
 		if len(deployment.Build.BuildUser) > 0 {
-			log.Info("패키지 빌드 사용자 : %s", deployment.Build.BuildUser)
+			log.Info("package build user : %s", deployment.Build.BuildUser)
 		}
-		log.Info("패키지 빌드 시각 : %s", deployment.Build.BuildTime)
+		log.Info("package build time : %s", deployment.Build.BuildTime)
 		if deployment.Build.HasGit() {
-			log.Info("패키지 빌드 (git) : %s", deployment.Build.Git)
+			log.Info("package build (git) : %s", deployment.Build.Git)
 		}
 	}
 }

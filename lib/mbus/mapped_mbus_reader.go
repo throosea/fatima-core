@@ -9,7 +9,7 @@
 //
 //
 // @project fatima
-// @author 1100282
+// @author DeockJin Chung (jin.freestyle@gmail.com)
 // @date 2017. 11. 2. PM 3:33
 //
 

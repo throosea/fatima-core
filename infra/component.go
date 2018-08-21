@@ -102,19 +102,19 @@ func bootupNotify() {
 
 	size := len(all)
 	if size > 0 {
-		cyBarrier := lib.NewCyclicBarrier(size, func() { log.Info("모든 FatimaComponent에게 Boot 메시지를 전달하였습니다") })
+		cyBarrier := lib.NewCyclicBarrier(size, func() { log.Info("bootup has notified to all FatimaComponent") })
 		for _, v := range all {
 			t := v
 			cyBarrier.Dispatch(func() { t.Bootup() })
 		}
 		cyBarrier.Wait()
 	} else {
-		log.Info("모든 FatimaComponent에게 Boot 메시지를 전달하였습니다")
+		log.Info("bootup has notified to all FatimaComponent")
 	}
 }
 
 func shutdownComponent(program string) {
-	log.Info("FatimaComponent들을 shutdown 합니다")
+	log.Info("start shutdown FatimaComponent")
 	all := make([]fatima.FatimaComponent, 0)
 	all = append(all, compPreInit...)
 	all = append(all, compGeneral...)
@@ -133,7 +133,7 @@ func shutdownComponent(program string) {
 	size := len(all)
 	if size > 0 {
 		cyBarrier := lib.NewCyclicBarrier(size, func() {
-			log.Warn("%s 프로그램을 종료합니다", program)
+			log.Warn("shutdown %s", program)
 		})
 		for _, v := range all {
 			t := v
@@ -141,7 +141,7 @@ func shutdownComponent(program string) {
 		}
 		cyBarrier.Wait()
 	} else {
-		log.Warn("%s 프로그램을 종료합니다", program)
+		log.Warn("shutdown %s", program)
 	}
 
 	log.Close()

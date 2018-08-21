@@ -112,7 +112,7 @@ func (this *DefaultProcessInteractor) Run() {
 	bootupNotify()
 	this.pprofService()
 	if this.runtimeProcess.GetBuilder().GetProcessType() == fatima.PROCESS_TYPE_GENERAL {
-		message := fmt.Sprintf("%s 프로세스가 시작되었습니다", this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
+		message := fmt.Sprintf("%s process started", this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
 		this.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlarmLevelMinor, message)
 	}
 }
@@ -123,7 +123,7 @@ func (this *DefaultProcessInteractor) Stop() {
 
 func (this *DefaultProcessInteractor) Shutdown() {
 	if this.runtimeProcess.GetBuilder().GetProcessType() == fatima.PROCESS_TYPE_GENERAL {
-		message := fmt.Sprintf("%s 프로세스가 중지되었습니다", this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
+		message := fmt.Sprintf("%s process shutdowned", this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
 		this.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlamLevelMajor, message)
 	}
 	lib.StopCron()
@@ -145,7 +145,7 @@ func (this *DefaultProcessInteractor) pprofService() {
 				log.Warn("fail to start pprof service : {}", err.Error())
 			}
 		}()
-		log.Info("pprof 서비스를 시작합니다. address=%s", addr)
+		log.Info("starting pprof service. address=%s", addr)
 	}
 }
 

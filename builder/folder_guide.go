@@ -102,7 +102,6 @@ func (this *FatimaFolderGuide) CreateTmpFilePath() string {
 	return filepath.Join(tmpDir, seed)
 }
 
-// FATIMA 구조 정의된 폴더들을 확인하고 필요하면 생성한다
 func (this *FatimaFolderGuide) resolveFolder(programName string) {
 	this.app = filepath.Join(this.fatimaHomePath, FatimaFolderApp, programName)
 	checkDirectory(this.app, true)
@@ -134,7 +133,6 @@ func checkDirectory(path string, forceCreate bool) {
 	}
 }
 
-// FATIMA 구조에 맞는 폴더 구조를 체크한다
 func newFolderGuide(proc fatima.SystemProc) fatima.FolderGuide {
 	folderGuide := new(FatimaFolderGuide)
 	folderGuide.fatimaHomePath = os.Getenv(fatima.ENV_FATIMA_HOME)
@@ -144,7 +142,6 @@ func newFolderGuide(proc fatima.SystemProc) fatima.FolderGuide {
 
 	folderGuide.resolveFolder(proc.GetProgramName())
 
-	// 현재 프로세스의 working directory를 $FATIMA_HOME/app/$process/proc 폴더로 지정한다
 	os.Chdir(folderGuide.proc)
 
 	return folderGuide
