@@ -102,14 +102,14 @@ func bootupNotify() {
 
 	size := len(all)
 	if size > 0 {
-		cyBarrier := lib.NewCyclicBarrier(size, func() { log.Info("bootup has notified to all FatimaComponent") })
+		cyBarrier := lib.NewCyclicBarrier(size, func() { log.Info("process start up successfully") })
 		for _, v := range all {
 			t := v
 			cyBarrier.Dispatch(func() { t.Bootup() })
 		}
 		cyBarrier.Wait()
 	} else {
-		log.Info("bootup has notified to all FatimaComponent")
+		log.Info("process start up successfully")
 	}
 }
 
