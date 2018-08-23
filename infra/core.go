@@ -138,7 +138,6 @@ func (this *DefaultProcessInteractor) RegistMeasureUnit(unit monitor.SystemMeasu
 func (this *DefaultProcessInteractor) pprofService() {
 	addr, ok := this.runtimeProcess.GetConfig().GetValue(builder.GOFATIMA_PROP_PPROF_ADDRESS)
 	if ok {
-		// pprof 포트 설정이 되었을 경우 ...
 		go func() {
 			err := http.ListenAndServe(addr, http.DefaultServeMux)
 			if err != nil {
