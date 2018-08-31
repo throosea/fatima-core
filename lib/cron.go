@@ -59,6 +59,7 @@ import (
 	"io/ioutil"
 	"strings"
 	"encoding/json"
+	"throosea.com/fatima/monitor"
 )
 
 const (
@@ -66,6 +67,7 @@ const (
 	configPrefix = "cron."
 	configSuffixSpec = ".spec"
 	configSuffixDesc = ".desc"
+	configSuffixPrimary = ".primary"
 	configSuffixSample = ".sample"
 	configSuffixRunUnique = ".rununique"
 )
@@ -90,6 +92,7 @@ type CronJob struct {
 	args			[]string
 	sample 			string
 	runUnique		bool
+	primary 		bool
 	runnable		func(string, fatima.FatimaRuntime, ...string)
 }
 
@@ -116,6 +119,16 @@ func (c CronJob) Run() {
 }
 
 func (c CronJob) canRunnable() bool {
+	if !fatimaRuntime.IsRunning() {
+		return false
+	}
+
+	if c.primary {
+		if fatimaRuntime.GetSystemStatus().GetPSStatus() != monitor.PS_STATUS_PRIMARY {
+			log.Info("cron job [%s] skipped because system is not PRIMARY", c.name)
+			return false
+		}
+	}
 	if !c.runUnique {
 		return true
 	}
@@ -270,6 +283,9 @@ func newCronJob(config fatima.Config, name string, runnable func(string, fatima.
 		desc = name
 	}
 
+	key = fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixPrimary)
+	primary, ok := config.GetValue(key)
+
 	key = fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixSample)
 	sample, ok := config.GetValue(key)
 
@@ -283,6 +299,10 @@ func newCronJob(config fatima.Config, name string, runnable func(string, fatima.
 	job.name = name
 	job.desc = desc
 	job.spec = spec
+	job.primary = true
+	if len(primary) == 0 || strings.ToLower(primary) != "true" {
+		job.primary = false
+	}
 	job.sample = strings.TrimSpace(sample)
 	job.runnable = runnable
 	job.runUnique = unique
