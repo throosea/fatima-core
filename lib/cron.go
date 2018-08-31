@@ -123,6 +123,7 @@ func (c CronJob) canRunnable() bool {
 	}
 
 	if c.primary {
+		log.Info("isprimary : %b", fatimaRuntime.GetSystemStatus().IsPrimary())
 		if !fatimaRuntime.GetSystemStatus().IsPrimary() {
 			log.Info("cron job [%s] skipped because system is not PRIMARY", c.name)
 			return false
@@ -305,6 +306,8 @@ func newCronJob(config fatima.Config, name string, runnable func(string, fatima.
 	job.sample = strings.TrimSpace(sample)
 	job.runnable = runnable
 	job.runUnique = unique
+
+	log.Info("job primary : %b", job.primary)
 	return job, nil
 }
 
