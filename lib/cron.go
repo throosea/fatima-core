@@ -59,7 +59,6 @@ import (
 	"io/ioutil"
 	"strings"
 	"encoding/json"
-	"throosea.com/fatima/monitor"
 )
 
 const (
@@ -124,7 +123,7 @@ func (c CronJob) canRunnable() bool {
 	}
 
 	if c.primary {
-		if fatimaRuntime.GetSystemStatus().GetPSStatus() != monitor.PS_STATUS_PRIMARY {
+		if !fatimaRuntime.GetSystemStatus().IsPrimary() {
 			log.Info("cron job [%s] skipped because system is not PRIMARY", c.name)
 			return false
 		}
