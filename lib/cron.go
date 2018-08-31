@@ -300,7 +300,7 @@ func newCronJob(config fatima.Config, name string, runnable func(string, fatima.
 	job.desc = desc
 	job.spec = spec
 	job.primary = true
-	if len(primary) == 0 || strings.ToLower(primary) != "true" {
+	if len(primary) > 0 || strings.ToLower(primary) != "true" {
 		job.primary = false
 	}
 	job.sample = strings.TrimSpace(sample)
