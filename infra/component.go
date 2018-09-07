@@ -165,11 +165,11 @@ func goawayComponent()  {
 	all = append(all, compGeneral...)
 	all = append(all, compPreInit...)
 
-	target := make([]*fatima.FatimaRuntimeGoaway, 0)
+	target := make([]fatima.FatimaRuntimeGoaway, 0)
 	goawayCount := 0
 	for _, v := range all {
 		if comp, ok := v.(fatima.FatimaRuntimeGoaway); ok {
-			target = append(target, &comp)
+			target = append(target, comp)
 			comp.Goaway()
 			goawayCount++
 		}
@@ -183,9 +183,10 @@ func goawayComponent()  {
 	wg := sync.WaitGroup{}
 	wg.Add(len(target))
 	for _, v := range target {
+		next := v
 		go func() {
 			defer wg.Done()
-			v.Goaway()
+			next.Goaway()
 		}()
 	}
 
