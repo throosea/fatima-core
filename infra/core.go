@@ -97,6 +97,10 @@ func (this *DefaultProcessInteractor) Initialize() bool {
 	return initializeComponent()
 }
 
+func (this *DefaultProcessInteractor) Goaway()  {
+	goawayComponent()
+}
+
 func (this *DefaultProcessInteractor) startListening() {
 	for _, v := range this.readers {
 		t := v

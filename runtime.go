@@ -36,10 +36,14 @@ type FatimaRuntimeInteractor interface {
 	Stop()
 }
 
+type FatimaRuntimeGoaway interface {
+	Goaway()
+}
+
 type ProcessInteractor interface {
 	FatimaRuntimeInteractor
+	FatimaRuntimeGoaway
 	Initialize() bool
-	Goaway()
 	Shutdown()
 }
 

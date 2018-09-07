@@ -24,11 +24,11 @@
 package infra
 
 import (
+	"errors"
+	"fmt"
 	"throosea.com/fatima"
 	"throosea.com/fatima/lib"
 	"throosea.com/log"
-	"errors"
-	"fmt"
 )
 
 var compPreInit []fatima.FatimaComponent
@@ -145,4 +145,36 @@ func shutdownComponent(program string) {
 	}
 
 	log.Close()
+}
+
+
+func goawayComponent()  {
+	log.Debug("start calling goaway...")
+	defer func() {
+		if r := recover(); r != nil {
+			log.Warn("**PANIC** while initializing", errors.New(fmt.Sprintf("%s", r)))
+			return
+		}
+		//res = true
+	}()
+
+	all := make([]fatima.FatimaComponent, 0)
+	all = append(all, compWriter...)
+	all = append(all, compReader...)
+	all = append(all, compGeneral...)
+	all = append(all, compPreInit...)
+
+	goawayCount := 0
+	for _, v := range all {
+		if comp, ok := v.(fatima.FatimaRuntimeGoaway); ok {
+			comp.Goaway()
+			goawayCount++
+		}
+	}
+
+	if goawayCount == 0 {
+		log.Debug("there are no goaway component")
+	} else {
+		log.Info("goaway %d component", goawayCount)
+	}
 }
