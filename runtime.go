@@ -39,6 +39,7 @@ type FatimaRuntimeInteractor interface {
 type ProcessInteractor interface {
 	FatimaRuntimeInteractor
 	Initialize() bool
+	Goaway()
 	Shutdown()
 }
 

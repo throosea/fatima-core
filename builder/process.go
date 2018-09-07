@@ -382,7 +382,7 @@ func init() {
 	log.SetLevel(log.LOG_TRACE)
 
 	fatimaProcess.sigs = make(chan os.Signal, 1)
-	signal.Notify(fatimaProcess.sigs, syscall.SIGINT, syscall.SIGKILL, syscall.SIGTERM)
+	signal.Notify(fatimaProcess.sigs, syscall.SIGINT, syscall.SIGKILL, syscall.SIGTERM, syscall.SIGUSR1)
 
 	fatimaProcess.status = proc_status_created
 	fatimaProcess.env = newFatimaProcessEnv()
