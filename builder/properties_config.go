@@ -138,7 +138,7 @@ func (this *PropertyConfigReader) GetDefine(key string) (string, bool) {
 
 func checkFileAvailable(path string) bool	{
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		log.Debug("file [%s] does not exist", filepath.Base(path))
+		log.Trace("file [%s] does not exist", filepath.Base(path))
 		return false
 	}
 

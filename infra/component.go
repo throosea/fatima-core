@@ -149,7 +149,7 @@ func shutdownComponent(program string) {
 
 
 func goawayComponent()  {
-	log.Debug("start calling goaway...")
+	log.Info("start calling goaway...")
 	defer func() {
 		if r := recover(); r != nil {
 			log.Warn("**PANIC** while initializing", errors.New(fmt.Sprintf("%s", r)))
