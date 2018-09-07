@@ -26,6 +26,7 @@ package infra
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"throosea.com/fatima"
 	"throosea.com/fatima/lib"
 	"throosea.com/log"
@@ -164,17 +165,30 @@ func goawayComponent()  {
 	all = append(all, compGeneral...)
 	all = append(all, compPreInit...)
 
+	target := make([]fatima.FatimaRuntimeGoaway, 0)
 	goawayCount := 0
 	for _, v := range all {
 		if comp, ok := v.(fatima.FatimaRuntimeGoaway); ok {
+			target = append(target, comp)
 			comp.Goaway()
 			goawayCount++
 		}
 	}
 
-	if goawayCount == 0 {
+	if len(target) == 0 {
 		log.Debug("there are no goaway component")
-	} else {
-		log.Info("goaway %d component", goawayCount)
+		return
 	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(len(target))
+	for _, v := range target {
+		go func() {
+			defer wg.Done()
+			v.Goaway()
+		}()
+	}
+
+	wg.Wait()
+	log.Info("goaway %d component", goawayCount)
 }
