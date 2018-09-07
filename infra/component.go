@@ -45,15 +45,19 @@ func init() {
 }
 
 func registComponent(comp fatima.FatimaComponent) {
-	switch comp.GetType() {
-	case fatima.COMP_PRE_INIT:
-		compPreInit = append(compPreInit, comp)
-	case fatima.COMP_GENERAL:
+	if c, ok := comp.(fatima.FatimaComponentTypeOrder); ok {
+		switch c.GetType() {
+		case fatima.COMP_PRE_INIT:
+			compPreInit = append(compPreInit, comp)
+		case fatima.COMP_GENERAL:
+			compGeneral = append(compGeneral, comp)
+		case fatima.COMP_READER:
+			compReader = append(compReader, comp)
+		case fatima.COMP_WRITER:
+			compWriter = append(compWriter, comp)
+		}
+	} else {
 		compGeneral = append(compGeneral, comp)
-	case fatima.COMP_READER:
-		compReader = append(compReader, comp)
-	case fatima.COMP_WRITER:
-		compWriter = append(compWriter, comp)
 	}
 }
 

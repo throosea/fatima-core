@@ -38,9 +38,12 @@ type FatimaComponent interface {
 	Initialize() bool
 	Bootup()
 	Shutdown()
-	GetType() FatimaComponentType
 }
 
 type FatimaIOReader interface {
 	StartListening()
+}
+
+type FatimaComponentTypeOrder interface {
+	GetType() FatimaComponentType
 }
