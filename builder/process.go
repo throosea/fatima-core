@@ -198,9 +198,16 @@ func (process *FatimaRuntimeProcess) Run() {
 
 	sigs := make(chan os.Signal, 1)
 	go func() {
-		sig := <-process.sigs
-		process.status = proc_status_shutdown
-		sigs <- sig
+		for true {
+			sig := <-process.sigs
+			if sig == syscall.SIGUSR1 {
+				process.interactor.Goaway()
+				continue
+			}
+			process.status = proc_status_shutdown
+			sigs <- sig
+			break
+		}
 	}()
 
 	if !process.interactor.Initialize() {
