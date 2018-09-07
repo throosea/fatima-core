@@ -183,13 +183,14 @@ func goawayComponent()  {
 	wg := sync.WaitGroup{}
 	wg.Add(len(target))
 	for _, v := range target {
-		next := v
-		go func() {
-			defer wg.Done()
-			next.Goaway()
-		}()
+		go callGoaway(&wg, v)
 	}
 
 	wg.Wait()
 	log.Info("goaway %d component", goawayCount)
+}
+
+func callGoaway(wg *sync.WaitGroup, comp fatima.FatimaRuntimeGoaway)	{
+	defer wg.Done()
+	comp.Goaway()
 }
