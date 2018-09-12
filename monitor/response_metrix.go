@@ -16,6 +16,7 @@
 package monitor
 
 type ResponseMetrix interface {
+	SystemMeasurable
 	Mark(score int)
 }
 
