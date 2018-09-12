@@ -19,15 +19,10 @@ import (
 	"bytes"
 	"fmt"
 	"throosea.com/fatima"
-	"throosea.com/fatima/monitor"
 )
 
 type ResponseMarker interface {
 	Mark(score int)
-}
-type ResponseMetrix interface {
-	monitor.SystemMeasurable
-	ResponseMarker
 }
 
 const (
@@ -35,12 +30,12 @@ const (
 	defaultPart = 10
 )
 
-func NewResponseMetrix(fatimaRuntime fatima.FatimaRuntime, name string)	ResponseMarker {
-	return NewCustomResponseMetrix(fatimaRuntime, name, defaultMax, defaultPart)
+func NewResponseMarker(fatimaRuntime fatima.FatimaRuntime, name string)	ResponseMarker {
+	return NewCustomResponseMarker(fatimaRuntime, name, defaultMax, defaultPart)
 }
 
-func NewCustomResponseMetrix(fatimaRuntime fatima.FatimaRuntime, name string, max, part int) ResponseMarker	{
-	m := &basicResponseMetrix{}
+func NewCustomResponseMarker(fatimaRuntime fatima.FatimaRuntime, name string, max, part int) ResponseMarker	{
+	m := &basicResponseMarker{}
 	m.name = name
 	if max < 1000 {
 		max = 1000
@@ -56,7 +51,7 @@ func NewCustomResponseMetrix(fatimaRuntime fatima.FatimaRuntime, name string, ma
 	return m
 }
 
-type basicResponseMetrix struct {
+type basicResponseMarker struct {
 	name 	string
 	max 	int
 	part 	int
@@ -65,7 +60,7 @@ type basicResponseMetrix struct {
 	labels 	[]string
 }
 
-func (b *basicResponseMetrix) build()	{
+func (b *basicResponseMarker) build()	{
 	b.list = make([]int, b.part)
 	b.labels = make([]string, b.part)
 	b.bunch = b.max / b.part
@@ -74,13 +69,13 @@ func (b *basicResponseMetrix) build()	{
 	}
 }
 
-func (b *basicResponseMetrix) reset()	{
+func (b *basicResponseMarker) reset()	{
 	for i:=0; i<b.part; i++	{
 		b.list[i] = 0
 	}
 }
 
-func (b *basicResponseMetrix) Mark(score int)	{
+func (b *basicResponseMarker) Mark(score int)	{
 	if score <= 0 {
 		b.list[0]++
 		return
@@ -95,11 +90,11 @@ func (b *basicResponseMetrix) Mark(score int)	{
 	b.list[pos]++
 }
 
-func (b *basicResponseMetrix) GetKeyName()	string {
+func (b *basicResponseMarker) GetKeyName()	string {
 	return b.name
 }
 
-func (b *basicResponseMetrix) GetMeasure()	string {
+func (b *basicResponseMarker) GetMeasure()	string {
 	defer b.reset()
 
 	buff := bytes.Buffer{}
