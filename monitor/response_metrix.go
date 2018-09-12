@@ -15,9 +15,18 @@
 
 package monitor
 
+import (
+	"bytes"
+	"fmt"
+	"throosea.com/fatima"
+)
+
+type ResponseMarker interface {
+	Mark(score int)
+}
 type ResponseMetrix interface {
 	SystemMeasurable
-	Mark(score int)
+	ResponseMarker
 }
 
 const (
@@ -25,11 +34,11 @@ const (
 	defaultPart = 10
 )
 
-func NewResponseMetrix(name string)	ResponseMetrix {
-	return NewCustomResponseMetrix(name, defaultMax, defaultPart)
+func NewResponseMetrix(fatimaRuntime fatima.FatimaRuntime, name string)	ResponseMarker {
+	return NewCustomResponseMetrix(fatimaRuntime, name, defaultMax, defaultPart)
 }
 
-func NewCustomResponseMetrix(name string, max, part int) ResponseMetrix	{
+func NewCustomResponseMetrix(fatimaRuntime fatima.FatimaRuntime, name string, max, part int) ResponseMarker	{
 	m := &basicResponseMetrix{}
 	m.name = name
 	if max < 1000 {
@@ -41,6 +50,8 @@ func NewCustomResponseMetrix(name string, max, part int) ResponseMetrix	{
 		part = 1
 	}
 	m.part = part
+	m.build()
+	fatimaRuntime.RegistMeasureUnit(m)
 	return m
 }
 
@@ -48,21 +59,59 @@ type basicResponseMetrix struct {
 	name 	string
 	max 	int
 	part 	int
+	bunch 	int
+	list 	[]int
+	labels 	[]string
+}
+
+func (b *basicResponseMetrix) build()	{
+	b.list = make([]int, b.part)
+	b.labels = make([]string, b.part)
+	b.bunch = b.max / b.part
+	for i:=0; i<b.part; i++	{
+		b.labels[i] = fmt.Sprintf("%5d", (i * b.bunch) + b.bunch)
+	}
+}
+
+func (b *basicResponseMetrix) reset()	{
+	for i:=0; i<b.part; i++	{
+		b.list[i] = 0
+	}
 }
 
 func (b *basicResponseMetrix) Mark(score int)	{
-	// TODO
+	if score <= 0 {
+		b.list[0]++
+		return
+	}
+
+	if score >= b.max {
+		b.list[len(b.list)-1]++
+		return
+	}
+
+	pos := score / b.bunch
+	b.list[pos]++
 }
 
 func (b *basicResponseMetrix) GetKeyName()	string {
-	// TODO
-
 	return b.name
 }
 
 func (b *basicResponseMetrix) GetMeasure()	string {
-	// TODO
+	defer b.reset()
 
-	return "basicResponseMetrix sample"
+	buff := bytes.Buffer{}
+	for i:=0; i<b.part; i++ {
+		buff.WriteString(b.labels[i])
+		buff.WriteString("|")
+	}
+	buff.WriteString("\n")
+	for i:=0; i<b.part; i++ {
+		buff.WriteString(fmt.Sprintf("%5d", b.list[i]))
+		buff.WriteString("|")
+	}
+
+	return buff.String()
 }
 
