@@ -13,7 +13,7 @@
 // @date 2018. 9. 12. PM 7:30
 //
 
-package infra
+package lib
 
 import (
 	"bytes"
