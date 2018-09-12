@@ -13,19 +13,20 @@
 // @date 2018. 9. 12. PM 7:30
 //
 
-package monitor
+package infra
 
 import (
 	"bytes"
 	"fmt"
 	"throosea.com/fatima"
+	"throosea.com/fatima/monitor"
 )
 
 type ResponseMarker interface {
 	Mark(score int)
 }
 type ResponseMetrix interface {
-	SystemMeasurable
+	monitor.SystemMeasurable
 	ResponseMarker
 }
 

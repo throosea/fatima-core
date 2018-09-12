@@ -13,7 +13,7 @@
 // @date 2018. 9. 12. PM 7:50
 //
 
-package monitor
+package infra
 
 /*
 func TestNewResponseMetrix(t *testing.T) {
