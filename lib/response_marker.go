@@ -18,6 +18,7 @@ package lib
 import (
 	"bytes"
 	"fmt"
+	"sync"
 	"throosea.com/fatima"
 )
 
@@ -52,6 +53,7 @@ func NewCustomResponseMarker(fatimaRuntime fatima.FatimaRuntime, name string, ma
 }
 
 type basicResponseMarker struct {
+	mutex 	sync.Mutex
 	name 	string
 	max 	int
 	part 	int
@@ -61,21 +63,30 @@ type basicResponseMarker struct {
 }
 
 func (b *basicResponseMarker) build()	{
-	b.list = make([]int, b.part)
-	b.labels = make([]string, b.part)
+	size := b.part + 1
+	b.list = make([]int, size)
+	b.labels = make([]string, size)
 	b.bunch = b.max / b.part
 	for i:=0; i<b.part; i++	{
 		b.labels[i] = fmt.Sprintf("%5d", (i * b.bunch) + b.bunch)
 	}
+	b.labels[b.part] = "TOTAL"
 }
 
 func (b *basicResponseMarker) reset()	{
-	for i:=0; i<b.part; i++	{
+	for i:=0; i<len(b.labels); i++	{
 		b.list[i] = 0
 	}
 }
 
 func (b *basicResponseMarker) Mark(score int)	{
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+
+	defer func() {
+		b.list[b.part]++
+	}()
+
 	if score <= 0 {
 		b.list[0]++
 		return
@@ -95,15 +106,17 @@ func (b *basicResponseMarker) GetKeyName()	string {
 }
 
 func (b *basicResponseMarker) GetMeasure()	string {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
 	defer b.reset()
 
 	buff := bytes.Buffer{}
-	for i:=0; i<b.part; i++ {
+	for i:=0; i<len(b.labels); i++ {
 		buff.WriteString(b.labels[i])
 		buff.WriteString("|")
 	}
 	buff.WriteString("\n")
-	for i:=0; i<b.part; i++ {
+	for i:=0; i<len(b.list); i++ {
 		buff.WriteString(fmt.Sprintf("%5d", b.list[i]))
 		buff.WriteString("|")
 	}
