@@ -88,12 +88,12 @@ func (w *executor) startExecute(workerId int, executeFunc func(interface{}))  {
 	log.Trace("executor worker %d started", workerId)
 	for true {
 		select {
-		case <-w.innerCtx.Done():
-			log.Info("[%d] executor worker finished", workerId)
-			return
 		case event := <-w.queue:
 			log.Info("[%d] executor worker event", workerId)
 			w.fetch(executeFunc, event)
+		case <-w.innerCtx.Done():
+			log.Info("[%d] executor worker finished", workerId)
+			return
 		}
 	}
 }
