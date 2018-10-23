@@ -184,6 +184,7 @@ func registerCronjobCommandsToJuno()	{
 		command := make(map[string]string)
 		command["name"] = job.name
 		command["desc"] = job.desc
+		command["spec"] = job.spec
 		command["sample"] = job.sample
 		cronCommands = append(cronCommands, command)
 	}
