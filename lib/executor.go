@@ -19,6 +19,7 @@ import (
 	"context"
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"throosea.com/log"
 )
 
@@ -81,7 +82,7 @@ type executor struct {
 	cancel   context.CancelFunc
 	queue    chan interface{}
 	wg       sync.WaitGroup
-	count    int
+	count    uint32
 }
 
 func (w *executor) startExecute(workerId int, executeFunc func(interface{}))  {
@@ -108,7 +109,7 @@ func (w *executor)	fetch(executeFunc func(interface{}), val interface{})	{
 		}
 	}()
 	defer func() {
-		w.count++
+		atomic.AddUint32(&w.count, 1)
 		w.wg.Done()
 	}()
 	executeFunc(val)
@@ -133,5 +134,5 @@ func (w *executor) Close()	{
 }
 
 func (w *executor) Count()	int {
-	return w.count
+	return int(w.count)
 }
