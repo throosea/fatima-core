@@ -66,6 +66,11 @@ func (wb *executorBuilder) SetWorkerSize(size int) ExecutorBuilder {
 }
 
 func (wb *executorBuilder) Build() Executor {
+	if wb.executeFunc == nil {
+		log.Error("executeFunc is nil")
+		return nil
+	}
+
 	ctx := new(executor)
 	ctx.innerCtx, ctx.cancel = context.WithCancel(context.Background())
 	ctx.queue = make(chan interface{}, wb.queueSize)
