@@ -23,9 +23,26 @@
 
 package lib
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 func CurrentTimeMillis() int {
 	return int(time.Now().UnixNano() / 1000000)
 }
 
+func ExpressDuration(startMillis int) string {
+	elapsed := CurrentTimeMillis() - startMillis
+	if elapsed <= 0 {
+		return "0 sec"
+	}
+
+	if elapsed > 60 * 1000 {
+		// min..
+		minute := elapsed / (60 * 1000)
+		remain := elapsed % (60 * 1000)
+		return fmt.Sprintf("%d min %d sec", minute, remain / 1000)
+	}
+	return fmt.Sprintf("%d sec", elapsed / 1000)
+}
