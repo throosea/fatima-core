@@ -19,6 +19,7 @@ import (
 	"context"
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"throosea.com/log"
 )
 
@@ -65,6 +66,11 @@ func (wb *executorBuilder) SetWorkerSize(size int) ExecutorBuilder {
 }
 
 func (wb *executorBuilder) Build() Executor {
+	if wb.executeFunc == nil {
+		log.Error("executeFunc is nil")
+		return nil
+	}
+
 	ctx := new(executor)
 	ctx.innerCtx, ctx.cancel = context.WithCancel(context.Background())
 	ctx.queue = make(chan interface{}, wb.queueSize)
@@ -81,7 +87,7 @@ type executor struct {
 	cancel   context.CancelFunc
 	queue    chan interface{}
 	wg       sync.WaitGroup
-	count    int
+	count    uint32
 }
 
 func (w *executor) startExecute(workerId int, executeFunc func(interface{}))  {
@@ -108,7 +114,7 @@ func (w *executor)	fetch(executeFunc func(interface{}), val interface{})	{
 		}
 	}()
 	defer func() {
-		w.count++
+		atomic.AddUint32(&w.count, 1)
 		w.wg.Done()
 	}()
 	executeFunc(val)
@@ -133,5 +139,5 @@ func (w *executor) Close()	{
 }
 
 func (w *executor) Count()	int {
-	return w.count
+	return int(w.count)
 }
