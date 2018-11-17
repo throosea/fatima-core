@@ -146,7 +146,7 @@ type Keyword struct {
 type Item struct {
 	commandType	CommandType	`xml:"-"`
 	Category	string	`xml:"category,attr"`
-	Key			string	`xml:"key,attr,omitempty"`
+	Key			string	`xml:"-"`
 	Signature	string	`xml:"sig,attr,omitempty"`
 	Text		string	`xml:",cdata"`
 }
@@ -252,6 +252,7 @@ func refineStage(stage *Stage)  {
 	if len(stage.Items) > 0 {
 		stage.commandType = COMMAND_MENU
 		for i:=0; i<len(stage.Items); i++	{
+			stage.Items[i].Key = string(i+1)
 			comp := strings.ToLower(stage.Items[i].Category)
 			switch comp {
 			case "text":
