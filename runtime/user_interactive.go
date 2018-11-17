@@ -260,10 +260,12 @@ func refineStage(stage *Stage)  {
 			case "menu":
 				stage.Items[i].commandType = COMMAND_MENU
 				stage.Items[i].Key = string(keyIndex)
+				fmt.Printf("menu %s stage %d key = %s, sig=%s\n", comp, i, keyIndex-1, stage.Items[i].Signature)
 				keyIndex++
 			case "call":
 				stage.Items[i].commandType = COMMAND_CALL
 				stage.Items[i].Key = string(keyIndex)
+				fmt.Printf("call %s stage %d key = %s, sig=%s\n", comp, i, keyIndex-1, stage.Items[i].Signature)
 				keyIndex++
 			}
 		}
