@@ -151,6 +151,11 @@ type Item struct {
 	Text		string	`xml:",cdata"`
 }
 
+func (i Item) String() string {
+	return fmt.Sprintf("commandType=%s, category=%s, key=%s, sig=%s, text=%s",
+		i.commandType, i.Category, i.Key, i.Signature, i.Text)
+}
+
 type Parameter struct {
 	ptype		ParameterType	`xml:"-"`
 	Type		string	`xml:"type,attr"`
@@ -260,12 +265,12 @@ func refineStage(stage *Stage)  {
 			case "menu":
 				stage.Items[i].commandType = COMMAND_MENU
 				stage.Items[i].Key = string(keyIndex)
-				fmt.Printf("menu %s stage %d key = %s, sig=%s\n", comp, i, keyIndex-1, stage.Items[i].Signature)
+				fmt.Printf("%s stage %d key = %d, sig=%s\n", comp, i, keyIndex, stage.Items[i].Signature)
 				keyIndex++
 			case "call":
 				stage.Items[i].commandType = COMMAND_CALL
 				stage.Items[i].Key = string(keyIndex)
-				fmt.Printf("call %s stage %d key = %s, sig=%s\n", comp, i, keyIndex-1, stage.Items[i].Signature)
+				fmt.Printf("%s stage %d key = %d, sig=%s\n", comp, i, keyIndex, stage.Items[i].Signature)
 				keyIndex++
 			}
 		}
@@ -489,6 +494,9 @@ func (ui *UserInteractive) Initialize() bool {
 					return false
 				}
 				refineStage(stage)
+				for _, v := range stage.Items {
+					fmt.Printf("%s\n", v)
+				}
 				uiSet.stages[inElement] = *stage
 			}
 		default:
