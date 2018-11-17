@@ -165,7 +165,7 @@ type Parameter struct {
 
 type Stage struct {
 	commandType	CommandType	`xml:"-"`
-	Items		[]*Item		`xml:"item,omitempty"`
+	Items		[]Item		`xml:"item,omitempty"`
 	Parameters	[]Parameter	`xml:"input,omitempty"`
 }
 
@@ -217,7 +217,7 @@ func (s Stage) Execute(userEnter string) bool {
 func (s Stage) findItem(value string) *Item {
 	for _, v := range s.Items {
 		if v.Key == value {
-			return v
+			return &v
 		}
 	}
 
@@ -264,12 +264,12 @@ func refineStage(stage *Stage)  {
 				stage.Items[i].commandType = COMMAND_TEXT
 			case "menu":
 				stage.Items[i].commandType = COMMAND_MENU
-				stage.Items[i].Key = string(keyIndex)
+				stage.Items[i].Key = strconv.Itoa(keyIndex)
 				fmt.Printf("%s stage %d key = %d, sig=%s\n", comp, i, keyIndex, stage.Items[i].Signature)
 				keyIndex++
 			case "call":
 				stage.Items[i].commandType = COMMAND_CALL
-				stage.Items[i].Key = string(keyIndex)
+				stage.Items[i].Key = strconv.Itoa(keyIndex)
 				fmt.Printf("%s stage %d key = %d, sig=%s\n", comp, i, keyIndex, stage.Items[i].Signature)
 				keyIndex++
 			}
