@@ -217,6 +217,11 @@ func (d *simpleETL) startDeliverToTransform()	{
 	}()
 
 	for true {
+		if d.ingestList == nil {
+			time.Sleep(time.Millisecond * 100)
+			continue
+		}
+
 		if d.ingestList.Len() == 0 && d.ingestFinish {
 			return
 		}
