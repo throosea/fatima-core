@@ -150,6 +150,9 @@ func (d *simpleETL) Process()  {
 	go d.startLoading()
 	go d.startDeliverToTransform()
 
+	// wait for a second (go func started...)
+	time.Sleep(time.Second)
+
 	startMillis := lib.CurrentTimeMillis()
 	log.Info("start loading....")
 	if d.logger != nil {
