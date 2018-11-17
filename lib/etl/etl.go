@@ -21,6 +21,7 @@ import (
 	"runtime"
 	"sync"
 	"sync/atomic"
+	"throosea.com/fatima/lib"
 	"throosea.com/log"
 	"time"
 )
@@ -105,7 +106,7 @@ func (f *dataFetchBuilder) Build() (SimpleETL, error) {
 	etl.ingestList = list.New()
 	etl.ingestFinish = false
 	etl.dataChan = make(chan interface{}, math.MaxInt16)
-	etl.executor = NewExecutorBuilder(etl.transform).
+	etl.executor = lib.NewExecutorBuilder(etl.transform).
 		SetQueueSize(f.transformQueueSize).
 		SetWorkerSize(f.transformWorkerSize).
 		Build()
@@ -114,7 +115,7 @@ func (f *dataFetchBuilder) Build() (SimpleETL, error) {
 }
 
 type simpleETL struct {
-	executor      Executor
+	executor      lib.Executor
 	extractFunc   func(ExtractionDeliver) error
 	transformFunc func(interface{}, Loader)
 	dataChan      chan interface{}
@@ -149,7 +150,7 @@ func (d *simpleETL) Process()  {
 	go d.startLoading()
 	go d.startDeliverToTransform()
 
-	startMillis := CurrentTimeMillis()
+	startMillis := lib.CurrentTimeMillis()
 	log.Info("start loading....")
 	if d.logger != nil {
 		d.logger.Printf("%s", "start loading....\n")
@@ -159,9 +160,9 @@ func (d *simpleETL) Process()  {
 
 	d.loadWg.Wait()
 
-	log.Info("ETL finish. total %d/%d done : %s", d.executor.Count(), d.loadCount, ExpressDuration(startMillis))
+	log.Info("ETL finish. total %d/%d done : %s", d.executor.Count(), d.loadCount, lib.ExpressDuration(startMillis))
 	if d.logger != nil {
-		d.logger.Printf("ETL finish. total %d/%d done : %s\n", d.executor.Count(), d.loadCount, ExpressDuration(startMillis))
+		d.logger.Printf("ETL finish. total %d/%d done : %s\n", d.executor.Count(), d.loadCount, lib.ExpressDuration(startMillis))
 	}
 }
 
@@ -171,7 +172,7 @@ func (d *simpleETL) startExtracting()  {
 		d.logger.Printf("%s", "start extracting with concurrent extractor\n")
 	}
 
-	startMillis := CurrentTimeMillis()
+	startMillis := lib.CurrentTimeMillis()
 	err := d.extractFunc(d)
 	if err != nil {
 		log.Warn("fail to extract : %s", err)
@@ -183,14 +184,14 @@ func (d *simpleETL) startExtracting()  {
 
 	d.ingestFinish = true
 	d.deliverWg.Wait()
-	log.Warn("waiting extract done. %s", ExpressDuration(startMillis))
+	log.Warn("waiting extract done. %s", lib.ExpressDuration(startMillis))
 	if d.logger != nil {
-		d.logger.Printf("waiting extract done. %s", ExpressDuration(startMillis))
+		d.logger.Printf("waiting extract done. %s", lib.ExpressDuration(startMillis))
 	}
 
 	d.executor.Wait()
 
-	elapsed := ExpressDuration(startMillis)
+	elapsed := lib.ExpressDuration(startMillis)
 	log.Warn("extract and transform finished. %d record. %s", d.executor.Count(), elapsed)
 	if d.logger != nil {
 		d.logger.Printf("extract and transform finished. %d record. %s\n", d.executor.Count(), elapsed)
