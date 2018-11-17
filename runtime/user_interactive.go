@@ -249,18 +249,22 @@ func (s Stage) getGuideText() string {
 }
 
 func refineStage(stage *Stage)  {
+	keyIndex := 1
 	if len(stage.Items) > 0 {
 		stage.commandType = COMMAND_MENU
 		for i:=0; i<len(stage.Items); i++	{
-			stage.Items[i].Key = string(i+1)
 			comp := strings.ToLower(stage.Items[i].Category)
 			switch comp {
 			case "text":
 				stage.Items[i].commandType = COMMAND_TEXT
 			case "menu":
 				stage.Items[i].commandType = COMMAND_MENU
+				stage.Items[i].Key = string(keyIndex)
+				keyIndex++
 			case "call":
 				stage.Items[i].commandType = COMMAND_CALL
+				stage.Items[i].Key = string(keyIndex)
+				keyIndex++
 			}
 		}
 	} else {
