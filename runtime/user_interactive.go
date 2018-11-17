@@ -265,12 +265,10 @@ func refineStage(stage *Stage)  {
 			case "menu":
 				stage.Items[i].commandType = COMMAND_MENU
 				stage.Items[i].Key = strconv.Itoa(keyIndex)
-				fmt.Printf("%s stage %d key = %d, sig=%s\n", comp, i, keyIndex, stage.Items[i].Signature)
 				keyIndex++
 			case "call":
 				stage.Items[i].commandType = COMMAND_CALL
 				stage.Items[i].Key = strconv.Itoa(keyIndex)
-				fmt.Printf("%s stage %d key = %d, sig=%s\n", comp, i, keyIndex, stage.Items[i].Signature)
 				keyIndex++
 			}
 		}
@@ -494,9 +492,6 @@ func (ui *UserInteractive) Initialize() bool {
 					return false
 				}
 				refineStage(stage)
-				for _, v := range stage.Items {
-					fmt.Printf("%s\n", v)
-				}
 				uiSet.stages[inElement] = *stage
 			}
 		default:
