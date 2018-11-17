@@ -165,7 +165,7 @@ type Parameter struct {
 
 type Stage struct {
 	commandType	CommandType	`xml:"-"`
-	Items		[]Item		`xml:"item,omitempty"`
+	Items		[]*Item		`xml:"item,omitempty"`
 	Parameters	[]Parameter	`xml:"input,omitempty"`
 }
 
@@ -217,7 +217,7 @@ func (s Stage) Execute(userEnter string) bool {
 func (s Stage) findItem(value string) *Item {
 	for _, v := range s.Items {
 		if v.Key == value {
-			return &v
+			return v
 		}
 	}
 
