@@ -123,6 +123,7 @@ type simpleETL struct {
 	logger        Logger
 	loadWg        sync.WaitGroup
 	deliverWg 		sync.WaitGroup
+	gofuncWg		sync.WaitGroup
 	loadCount     uint32
 	ingestList    *list.List
 	ingestFinish	bool
@@ -147,11 +148,12 @@ func (d *simpleETL) Process()  {
 		}
 	}()
 
+	d.gofuncWg.Add(2)
 	go d.startLoading()
 	go d.startDeliverToTransform()
 
 	// wait for a second (go func started...)
-	time.Sleep(time.Second)
+	d.gofuncWg.Wait()
 
 	startMillis := lib.CurrentTimeMillis()
 	log.Info("start loading....")
@@ -206,6 +208,7 @@ func (d *simpleETL) Deliver(v interface{})	{
 }
 
 func (d *simpleETL) startLoading()	{
+	d.gofuncWg.Done()
 	for elem := range d.dataChan {
 		d.loaderFunc(elem)
 		d.loadWg.Done()
@@ -219,12 +222,8 @@ func (d *simpleETL) startDeliverToTransform()	{
 		d.deliverWg.Done()
 	}()
 
+	d.gofuncWg.Done()
 	for true {
-		if d.ingestList == nil {
-			time.Sleep(time.Millisecond * 100)
-			continue
-		}
-
 		if d.ingestList.Len() == 0 && d.ingestFinish {
 			return
 		}
