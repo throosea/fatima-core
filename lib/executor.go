@@ -18,6 +18,7 @@ package lib
 import (
 	"context"
 	"runtime"
+	"runtime/debug"
 	"sync"
 	"sync/atomic"
 	"throosea.com/log"
@@ -111,6 +112,7 @@ func (w *executor)	fetch(executeFunc func(interface{}), val interface{})	{
 	defer func() {
 		if r := recover(); r != nil {
 			log.Error("panic to execute", r)
+			log.Error("%s", string(debug.Stack()))
 		}
 	}()
 	defer func() {

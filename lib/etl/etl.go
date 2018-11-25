@@ -19,6 +19,7 @@ import (
 	"container/list"
 	"math"
 	"runtime"
+	"runtime/debug"
 	"sync"
 	"sync/atomic"
 	"throosea.com/fatima/lib"
@@ -140,10 +141,11 @@ func (d *simpleETL) Process()  {
 		close(d.dataChan)
 
 		if r := recover(); r != nil {
-			log.Info("process panic : %v", r)
+			log.Error("process panic : %v", r)
 			if d.logger != nil {
 				d.logger.Printf("process panic : %v\n", r)
 			}
+			log.Error("%s", string(debug.Stack()))
 			return
 		}
 	}()

@@ -48,6 +48,7 @@ package lib
 
 import (
 	robfig_cron "github.com/robfig/cron"
+	"runtime/debug"
 	"throosea.com/fatima"
 	"errors"
 	"fmt"
@@ -104,6 +105,7 @@ func (c CronJob) Run() {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Error("panic to execute : %s", r)
+			log.Error("%s", string(debug.Stack()))
 		}
 		jobRunningMutex.Lock()
 		defer jobRunningMutex.Unlock()

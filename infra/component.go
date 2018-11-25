@@ -26,6 +26,7 @@ package infra
 import (
 	"errors"
 	"fmt"
+	"runtime/debug"
 	"sync"
 	"throosea.com/fatima"
 	"throosea.com/fatima/lib"
@@ -66,7 +67,8 @@ func initializeComponent() (res bool) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			log.Warn("**PANIC** while initializing", errors.New(fmt.Sprintf("%s", r)))
+			log.Error("**PANIC** while initializing", errors.New(fmt.Sprintf("%s", r)))
+			log.Error("%s", string(debug.Stack()))
 			return
 		}
 		//res = true
@@ -128,7 +130,8 @@ func shutdownComponent(program string) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			log.Warn("**PANIC** while shutdown", errors.New(fmt.Sprintf("%s", r)))
+			log.Error("**PANIC** while shutdown", errors.New(fmt.Sprintf("%s", r)))
+			log.Error("%s", string(debug.Stack()))
 			log.Close()
 			return
 		}
@@ -158,6 +161,7 @@ func goawayComponent()  {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Warn("**PANIC** while initializing", errors.New(fmt.Sprintf("%s", r)))
+			log.Warn("%s", string(debug.Stack()))
 			return
 		}
 		//res = true

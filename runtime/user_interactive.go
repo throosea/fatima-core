@@ -16,6 +16,7 @@
 package runtime
 
 import (
+	"runtime/debug"
 	"throosea.com/fatima"
 	"path/filepath"
 	"os"
@@ -297,6 +298,7 @@ func executeCommand(funcName string, stage Stage) (ret bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Printf("**PANIC** while executing...\n", errors.New(fmt.Sprintf("%s", r)))
+			fmt.Printf("%s", string(debug.Stack()))
 			return
 		}
 	}()
@@ -392,6 +394,7 @@ func executeBareCommand(funcName string) bool	{
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Printf("**PANIC** while executing...\n", errors.New(fmt.Sprintf("%s", r)))
+			fmt.Printf("%s", string(debug.Stack()))
 			return
 		}
 	}()

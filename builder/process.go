@@ -29,6 +29,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime/debug"
 	"syscall"
 	"throosea.com/fatima"
 	"throosea.com/log"
@@ -220,7 +221,8 @@ func (process *FatimaRuntimeProcess) Run() {
 
 	defer func() {
 		if r := recover(); r != nil {
-			log.Warn("**PANIC** while running", errors.New(fmt.Sprintf("%s", r)))
+			log.Error("**PANIC** while running", errors.New(fmt.Sprintf("%s", r)))
+			log.Error("%s", string(debug.Stack()))
 			process.status = proc_status_shutdown
 			process.interactor.Shutdown()
 			log.Close()
