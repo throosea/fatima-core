@@ -84,15 +84,18 @@ func newSystemProc() fatima.SystemProc {
 	return proc
 }
 
-const debugappStr = "-debugapp="
+//const debugappStr = "-debugapp="
+var debugappList = [...]string{"-debugapp", "debugapp"}
 func getDebugAppName() string {
 	if len(os.Args) == 1 {
 		return ""
 	}
 
 	for _, v := range os.Args[1:]	{
-		if strings.HasPrefix(v, debugappStr) {
-			return v[len(debugappStr):]
+		for _, s := range debugappList {
+			if strings.HasPrefix(v, s) {
+				return v[len(s):]
+			}
 		}
 	}
 
