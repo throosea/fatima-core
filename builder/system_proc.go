@@ -84,8 +84,7 @@ func newSystemProc() fatima.SystemProc {
 	return proc
 }
 
-//const debugappStr = "-debugapp="
-var debugappList = [...]string{"-debugapp", "debugapp"}
+var debugappList = [...]string{"-debugapp=", "debugapp="}
 func getDebugAppName() string {
 	if len(os.Args) == 1 {
 		return ""
