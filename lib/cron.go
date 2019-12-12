@@ -68,6 +68,7 @@ const (
 	configSuffixSpec = ".spec"
 	configSuffixDesc = ".desc"
 	configSuffixPrimary = ".primary"
+	configSuffixProfile = ".profile"
 	configSuffixSample = ".sample"
 	configSuffixRunUnique = ".rununique"
 )
@@ -93,6 +94,7 @@ type CronJob struct {
 	sample 			string
 	runUnique		bool
 	primary 		bool
+	profile 		string
 	runnable		func(string, fatima.FatimaRuntime, ...string)
 }
 
@@ -124,6 +126,12 @@ func (c CronJob) canRunnable() bool {
 		return false
 	}
 
+	if len(c.profile) > 0 {
+		if strings.ToLower(c.profile) != strings.ToLower(fatimaRuntime.GetEnv().GetProfile()) {
+			log.Info("cron job [%s] skipped because running only profile %s", c.name, c.profile)
+			return false
+		}
+	}
 	if c.primary {
 		if !fatimaRuntime.GetSystemStatus().IsPrimary() {
 			log.Info("cron job [%s] skipped because system is not PRIMARY", c.name)
@@ -285,6 +293,9 @@ func newCronJob(config fatima.Config, name string, runnable func(string, fatima.
 		desc = name
 	}
 
+	key = fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixProfile)
+	profile, ok := config.GetValue(key)
+
 	key = fmt.Sprintf("%s%s%s", configPrefix, name, configSuffixPrimary)
 	primary, ok := config.GetValue(key)
 
@@ -301,6 +312,7 @@ func newCronJob(config fatima.Config, name string, runnable func(string, fatima.
 	job.name = name
 	job.desc = desc
 	job.spec = spec
+	job.profile = profile
 	job.primary = true
 	if len(primary) > 0 && strings.ToLower(primary) != "true" {
 		job.primary = false
