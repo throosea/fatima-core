@@ -126,12 +126,10 @@ func (c CronJob) canRunnable() bool {
 		return false
 	}
 
-	if len(c.profile) > 0 {
-		if strings.ToLower(c.profile) != strings.ToLower(fatimaRuntime.GetEnv().GetProfile()) {
-			log.Info("cron job [%s] skipped because running only profile %s", c.name, c.profile)
-			return false
-		}
+	if !c.isProfileMatch()	{
+		return false
 	}
+
 	if c.primary {
 		if !fatimaRuntime.GetSystemStatus().IsPrimary() {
 			log.Info("cron job [%s] skipped because system is not PRIMARY", c.name)
@@ -151,6 +149,22 @@ func (c CronJob) canRunnable() bool {
 	}
 	runningCronJobs[c.name] = struct{}{}
 	return true
+}
+
+func (c CronJob) isProfileMatch() bool {
+	if len(c.profile) == 0 {
+		return true
+	}
+
+	comp := strings.ToUpper(fatimaRuntime.GetEnv().GetProfile())
+	for _, v := range strings.Split(c.profile, ",")	{
+		token := strings.TrimSpace(v)
+		if strings.ToUpper(token) == comp {
+			return true
+		}
+	}
+
+	return false
 }
 
 func StartCron() {
