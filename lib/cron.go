@@ -127,6 +127,7 @@ func (c CronJob) canRunnable() bool {
 	}
 
 	if !c.isProfileMatch()	{
+		log.Info("cron job [%s] skipped because profile is not match", c.name)
 		return false
 	}
 
