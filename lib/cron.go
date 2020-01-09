@@ -165,6 +165,7 @@ func (c CronJob) isProfileMatch() bool {
 		}
 	}
 
+	log.Info("mismatch profile : [%s=%s]", fatimaRuntime.GetEnv().GetProfile(), c.profile)
 	return false
 }
 
