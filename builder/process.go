@@ -342,11 +342,12 @@ func buildLogging(builder FatimaRuntimeBuilder) {
 	// log4fatima file size limit
 	v, ok = builder.GetConfig().GetValue(LOG4FATIMA_PROP_SENTRY_DSN)
 	if ok {
+		dsn := v
 		m := make(map[string]string)
 		m[tagEnvironment] = fatimaProcess.GetEnv().GetProfile()
 		m[tagServerName] = fmt.Sprintf("%s::%s", fatimaProcess.GetPackaging().GetGroup(), fatimaProcess.GetPackaging().GetHost())
 		m[tagProcess] = fatimaProcess.GetEnv().GetSystemProc().GetProgramName()
-		log.SetSentryDsn(v, m)
+		log.SetSentryDsn(dsn, m)
 
 		v, ok = builder.GetConfig().GetValue(LOG4FATIMA_PROP_SENTRY_FLUSH_SECOND)
 		if ok {
@@ -364,7 +365,7 @@ func buildLogging(builder FatimaRuntimeBuilder) {
 		}
 
 		log.SentryInit()
-		log.Info("sentry initialized. dsn=%s", v)
+		log.Info("sentry initialized. dsn=%s", dsn)
 	}
 }
 
