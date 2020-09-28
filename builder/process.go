@@ -53,9 +53,19 @@ const (
 	LOG4FATIMA_PROP_SHOW_METHOD           = "log4fatima.method.show"
 	LOG4FATIMA_PROP_SOURCE_PRINTSIZE      = "log4fatima.source.printsize"
 	LOG4FATIMA_PROP_FILE_SIZE_LIMIT       = "log4fatima.filesize.limit"
+	LOG4FATIMA_PROP_SENTRY_DSN		      = "log4fatima.sentry.dsn"
+	LOG4FATIMA_PROP_SENTRY_FLUSH_SECOND   = "log4fatima.sentry.flush.second"
+	LOG4FATIMA_PROP_SENTRY_LOGLEVEL	      = "log4fatima.sentry.loglevel"
 	LOG4FATIMA_DEFAULT_BACKUP_FILE_NUMBER = 30
 	LOG4FATIMA_DEFAULT_SOURCE_PRINTSIZE = 30
 )
+
+const (
+	tagEnvironment	= "environment"
+	tagServerName	= "serverName"
+	tagProcess 		= "process"
+)
+
 
 type FatimaProcessStatus uint8
 
@@ -327,6 +337,33 @@ func buildLogging(builder FatimaRuntimeBuilder) {
 		} else {
 			log.SetFileSizeLimitMB(uint16(i))
 		}
+	}
+
+	// log4fatima file size limit
+	v, ok = builder.GetConfig().GetValue(LOG4FATIMA_PROP_SENTRY_DSN)
+	if ok {
+		m := make(map[string]string)
+		m[tagEnvironment] = fatimaProcess.GetEnv().GetProfile()
+		m[tagServerName] = fmt.Sprintf("%s::%s", fatimaProcess.GetPackaging().GetGroup(), fatimaProcess.GetPackaging().GetHost())
+		m[tagProcess] = fatimaProcess.GetEnv().GetSystemProc().GetProgramName()
+		log.SetSentryDsn(v, m)
+
+		v, ok = builder.GetConfig().GetValue(LOG4FATIMA_PROP_SENTRY_FLUSH_SECOND)
+		if ok {
+			i, err := strconv.Atoi(v)
+			if err != nil {
+				log.Warn("[%s] invalid value format : %s", LOG4FATIMA_PROP_SENTRY_FLUSH_SECOND, v)
+			} else {
+				log.SetSentryFlushSecond(i)
+			}
+		}
+
+		v, ok = builder.GetConfig().GetValue(LOG4FATIMA_PROP_SENTRY_LOGLEVEL)
+		if ok {
+			log.SetSentryLogLevel(v)
+		}
+
+		log.SentryInit()
 	}
 }
 
