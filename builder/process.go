@@ -364,6 +364,7 @@ func buildLogging(builder FatimaRuntimeBuilder) {
 		}
 
 		log.SentryInit()
+		log.Info("sentry initialized. dsn=%s", v)
 	}
 }
 
