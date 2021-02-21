@@ -1,9 +1,9 @@
 module throosea.com/fatima
 
-require (
-	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
-	gopkg.in/yaml.v2 v2.2.4
-	throosea.com/log v1.0.3
-)
+go 1.16
 
-go 1.14
+require (
+	github.com/robfig/cron v1.2.0
+	gopkg.in/yaml.v2 v2.4.0
+	throosea.com/log v1.0.4
+)
