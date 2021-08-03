@@ -24,20 +24,20 @@
 package builder
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"runtime/debug"
-	"syscall"
-	"throosea.com/fatima"
-	"throosea.com/log"
-	"throosea.com/fatima/monitor"
-	"errors"
 	"strconv"
 	"strings"
-	"encoding/json"
+	"syscall"
+	"throosea.com/fatima"
+	"throosea.com/fatima/monitor"
+	"throosea.com/log"
 )
 
 const (
@@ -53,19 +53,18 @@ const (
 	LOG4FATIMA_PROP_SHOW_METHOD           = "log4fatima.method.show"
 	LOG4FATIMA_PROP_SOURCE_PRINTSIZE      = "log4fatima.source.printsize"
 	LOG4FATIMA_PROP_FILE_SIZE_LIMIT       = "log4fatima.filesize.limit"
-	LOG4FATIMA_PROP_SENTRY_DSN		      = "log4fatima.sentry.dsn"
+	LOG4FATIMA_PROP_SENTRY_DSN            = "log4fatima.sentry.dsn"
 	LOG4FATIMA_PROP_SENTRY_FLUSH_SECOND   = "log4fatima.sentry.flush.second"
-	LOG4FATIMA_PROP_SENTRY_LOGLEVEL	      = "log4fatima.sentry.loglevel"
+	LOG4FATIMA_PROP_SENTRY_LOGLEVEL       = "log4fatima.sentry.loglevel"
 	LOG4FATIMA_DEFAULT_BACKUP_FILE_NUMBER = 30
-	LOG4FATIMA_DEFAULT_SOURCE_PRINTSIZE = 30
+	LOG4FATIMA_DEFAULT_SOURCE_PRINTSIZE   = 30
 )
 
 const (
-	tagEnvironment	= "environment"
-	tagServerName	= "serverName"
-	tagProcess 		= "process"
+	tagEnvironment = "environment"
+	tagServerName  = "serverName"
+	tagProcess     = "process"
 )
-
 
 type FatimaProcessStatus uint8
 
@@ -101,20 +100,20 @@ type FatimaRuntimeBuilder interface {
 }
 
 type FatimaPackaging struct {
-	name	string
-	host	string
-	group	string
+	name  string
+	host  string
+	group string
 }
 
-func (p *FatimaPackaging) GetName()	string	{
+func (p *FatimaPackaging) GetName() string {
 	return p.name
 }
 
-func (p *FatimaPackaging) GetHost()	string	{
+func (p *FatimaPackaging) GetHost() string {
 	return p.host
 }
 
-func (p *FatimaPackaging) GetGroup() string	{
+func (p *FatimaPackaging) GetGroup() string {
 	return p.group
 }
 
@@ -250,30 +249,30 @@ func (process *FatimaRuntimeProcess) Stop() {
 }
 
 func (process *FatimaRuntimeProcess) Regist(component fatima.FatimaComponent) {
-	if process.IsRunning()	{
+	if process.IsRunning() {
 		process.interactor.Regist(component)
 	}
 }
 
 func (process *FatimaRuntimeProcess) RegistSystemHAAware(aware monitor.FatimaSystemHAAware) {
-	if process.IsRunning()	{
+	if process.IsRunning() {
 		process.interactor.RegistSystemHAAware(aware)
 	}
 }
 
 func (process *FatimaRuntimeProcess) RegistSystemPSAware(aware monitor.FatimaSystemPSAware) {
-	if process.IsRunning()	{
+	if process.IsRunning() {
 		process.interactor.RegistSystemPSAware(aware)
 	}
 }
 
 func (process *FatimaRuntimeProcess) RegistMeasureUnit(unit monitor.SystemMeasurable) {
-	if process.IsRunning()	{
+	if process.IsRunning() {
 		process.interactor.RegistMeasureUnit(unit)
 	}
 }
 
-func (process *FatimaRuntimeProcess) Initialize(builder FatimaRuntimeBuilder)  {
+func (process *FatimaRuntimeProcess) Initialize(builder FatimaRuntimeBuilder) {
 	if process.status >= proc_status_initializing {
 		return
 	}
@@ -412,13 +411,21 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 		//os.Stdout = outfile
 		//os.Stderr = outfile
 
-		syscall.Dup2(int(outfile.Fd()), 1)	// stdout
-		syscall.Dup2(int(outfile.Fd()), 2)	// stderr
+		var redirectConsole bool
+		redirectConsole, err = process.GetConfig().GetBool(GOFATIMA_REDIRECT_CONSOLE)
+		if err != nil {
+			redirectConsole = true // default
+		}
+
+		if redirectConsole {
+			syscall.Dup2(int(outfile.Fd()), 1) // stdout
+			syscall.Dup2(int(outfile.Fd()), 2) // stderr
+		}
 	}
 }
 
-func getFileSize(p string) int 	{
-	fi, e := os.Stat(p);
+func getFileSize(p string) int {
+	fi, e := os.Stat(p)
 	if e != nil {
 		return 0
 	}
@@ -466,16 +473,16 @@ func newFatimaProcessEnv() *FatimaProcessEnv {
 func createPlatformSupport() fatima.PlatformSupport {
 	return new(OSPlatform)
 	/*
-	switch runtime.GOOS {
-	case "linux":
-		return new(PlatformLinux)
-	case "darwin":
-		return new(PlatformOSX)
-	default:
-		// windows, freebsd
-		panic("Unsupported fatima arch")
-	}
-	//	return support
+		switch runtime.GOOS {
+		case "linux":
+			return new(PlatformLinux)
+		case "darwin":
+			return new(PlatformOSX)
+		default:
+			// windows, freebsd
+			panic("Unsupported fatima arch")
+		}
+		//	return support
 	*/
 }
 
@@ -516,12 +523,12 @@ func displayDeploymentInfo(env fatima.FatimaEnv) {
 }
 
 type Deployment struct {
-	Process		string		`json:"process"`
-	ProcessType string		`json:"process_type,omitempty"`
-	Build 		DeploymentBuild `json:"build,omitempty"`
+	Process     string          `json:"process"`
+	ProcessType string          `json:"process_type,omitempty"`
+	Build       DeploymentBuild `json:"build,omitempty"`
 }
 
-func (d Deployment) HasBuildInfo()	bool 	{
+func (d Deployment) HasBuildInfo() bool {
 	if len(d.Build.BuildTime) == 0 {
 		return false
 	}
@@ -529,12 +536,12 @@ func (d Deployment) HasBuildInfo()	bool 	{
 }
 
 type DeploymentBuild struct {
-	Git			DeploymentBuildGit `json:"git,omitempty"`
-	BuildTime 	string		`json:"time,omitempty"`
-	BuildUser 	string		`json:"user,omitempty"`
+	Git       DeploymentBuildGit `json:"git,omitempty"`
+	BuildTime string             `json:"time,omitempty"`
+	BuildUser string             `json:"user,omitempty"`
 }
 
-func (d DeploymentBuild) HasGit()	bool 	{
+func (d DeploymentBuild) HasGit() bool {
 	if len(d.Git.Branch) == 0 {
 		return false
 	}
@@ -542,10 +549,10 @@ func (d DeploymentBuild) HasGit()	bool 	{
 }
 
 type DeploymentBuildGit struct {
-	Branch		string		`json:"branch"`
-	Commit		string		`json:"commit"`
+	Branch string `json:"branch"`
+	Commit string `json:"commit"`
 }
 
-func (d DeploymentBuildGit) String()	string 	{
+func (d DeploymentBuildGit) String() string {
 	return fmt.Sprintf("Branch=[%s], Commit=[%s]", d.Branch, d.Commit)
 }

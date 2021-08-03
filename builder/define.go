@@ -23,7 +23,6 @@
 
 package builder
 
-
 const (
 	BUILTIN_VARIABLE_HOME            = "${var.builtin.user.home}"
 	BUILTIN_VARIABLE_FATIMA_HOME     = "${var.builtin.fatima.home}"
@@ -33,11 +32,12 @@ const (
 	BUILTIN_VARIABLE_APP_NAME        = "${var.builtin.app.name}"
 	BUILTIN_VARIABLE_APP_FOLDER_DATA = "${var.builtin.app.folder.data}"
 
-	GLOBAL_DEFINE_PACKAGE_HOSTNAME = "var.global.package.hostname"
+	GLOBAL_DEFINE_PACKAGE_HOSTNAME  = "var.global.package.hostname"
 	GLOBAL_DEFINE_PACKAGE_GROUPNAME = "var.global.package.groupname"
-	GLOBAL_DEFINE_PACKAGE_NAME = "var.global.package.name"
+	GLOBAL_DEFINE_PACKAGE_NAME      = "var.global.package.name"
 )
 
 const (
-	GOFATIMA_PROP_PPROF_ADDRESS		= "gofatima.pprof.address"		// e.g :6060, localhost:6060
+	GOFATIMA_PROP_PPROF_ADDRESS = "gofatima.pprof.address"    // e.g :6060, localhost:6060
+	GOFATIMA_REDIRECT_CONSOLE   = "gofatima.redirect.console" // e.g true, false. default=true
 )
