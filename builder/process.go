@@ -447,7 +447,8 @@ func init() {
 		os.Exit(0)
 		//fatimaProcess.status = proc_status_shutdown
 	}
-	fatimaProcess.notifyHandler, err = NewDefaultSystemNotifyHandler(fatimaProcess)
+	//fatimaProcess.notifyHandler, err = NewDefaultSystemNotifyHandler(fatimaProcess)
+	fatimaProcess.notifyHandler, err = NewGrpcSystemNotifyHandler(fatimaProcess)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(0)

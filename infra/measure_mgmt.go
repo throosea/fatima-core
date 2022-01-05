@@ -44,26 +44,29 @@ type SystemMeasureManagement struct {
 	writer         MeasurementWriter
 }
 
-func (this *SystemMeasureManagement) registUnit(unit monitor.SystemMeasurable) {
-	this.units = append(this.units, unit)
+func (s *SystemMeasureManagement) registUnit(unit monitor.SystemMeasurable) {
+	s.units = append(s.units, unit)
 }
 
 var measureTick uint64 = 0
-func (this *SystemMeasureManagement) Process() {
+
+func (s *SystemMeasureManagement) Process() {
 	msr := measurement{eventTime: time.Now()}
 	msr.items = make([]measureItem, 0)
-	for _, v := range this.units {
+	for _, v := range s.units {
 		msr.items = append(msr.items, measureItem{v.GetKeyName(), v.GetMeasure()})
 	}
-	this.writer.write(msr)
+	s.writer.write(msr)
 
 	measureTick += 1
-	if measureTick % 12 == 0 {
+
+	// collect (every 5 seconds) measurement and send one time (every 1 min)
+	if measureTick%12 == 0 {
 		activity := make(map[string]string)
-		for _,v := range msr.items {
+		for _, v := range msr.items {
 			activity[v.keyName] = v.value
 		}
-		this.runtimeProcess.GetSystemNotifyHandler().SendActivity(activity)
+		s.runtimeProcess.GetSystemNotifyHandler().SendActivity(activity)
 	}
 }
 
