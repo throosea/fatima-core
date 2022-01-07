@@ -53,7 +53,7 @@ func NewGrpcSystemNotifyHandler(fatimaRuntime fatima.FatimaRuntime) (monitor.Sys
 	handler := GrpcSystemNotifyHandler{fatimaRuntime: fatimaRuntime}
 	handler.queue = make(chan []byte, maxQueueSize)
 
-	handler.saturnAddress = buildServiceAddress(fatimaRuntime)
+	handler.saturnAddress = buildServiceAddress(NewPropertyPredefineReader(fatimaRuntime.GetEnv()))
 
 	go handler.consumeQueue()
 
@@ -132,13 +132,8 @@ func (s *GrpcSystemNotifyHandler) connectSaturn() {
 	s.conn = gConn
 }
 
-func buildServiceAddress(fatimaRuntime fatima.FatimaRuntime) string {
-	fproc, ok := fatimaRuntime.(*FatimaRuntimeProcess)
-	if !ok {
-		return valueDefaultAddress
-	}
-
-	address, ok := fproc.GetBuilder().GetPredefines().GetDefine(propPredefineSaturnPort)
+func buildServiceAddress(predefinedReader *PropertyPredefineReader) string {
+	address, ok := predefinedReader.GetDefine(propPredefineSaturnPort)
 	if !ok {
 		return valueDefaultAddress
 	}
