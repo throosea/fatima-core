@@ -141,11 +141,20 @@ func buildServiceAddress(predefinedReader *PropertyPredefineReader) string {
 	return address
 }
 
+var (
+	messageDropFlag = false
+)
+
 func (s *GrpcSystemNotifyHandler) enqueueForSending(bytes []byte) {
 	if len(s.queue) >= dropQueueSize {
+		if !messageDropFlag {
+			messageDropFlag = true
+			log.Warn("notify handler drop message....")
+		}
 		return // DROP...
 	}
 
+	messageDropFlag = false
 	s.queue <- bytes
 }
 
