@@ -60,20 +60,14 @@ func (s *SystemMeasureManagement) Process() {
 
 	measureTick += 1
 
-	activity := make(map[string]string)
-	for _, v := range msr.items {
-		activity[v.keyName] = v.value
-	}
-	s.runtimeProcess.GetSystemNotifyHandler().SendActivity(activity)
-
 	// collect (every 5 seconds) measurement and send one time (every 1 min)
-	//if measureTick % 12 == 0 {
-	//	activity := make(map[string]string)
-	//	for _,v := range msr.items {
-	//		activity[v.keyName] = v.value
-	//	}
-	//	this.runtimeProcess.GetSystemNotifyHandler().SendActivity(activity)
-	//}
+	if measureTick%12 == 0 {
+		activity := make(map[string]string)
+		for _, v := range msr.items {
+			activity[v.keyName] = v.value
+		}
+		s.runtimeProcess.GetSystemNotifyHandler().SendActivity(activity)
+	}
 }
 
 type measurement struct {
