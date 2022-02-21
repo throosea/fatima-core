@@ -24,22 +24,22 @@
 package lib
 
 import (
-	"throosea.com/fatima"
-	"time"
-	"path/filepath"
-	"io/ioutil"
-	"encoding/json"
-	"sync"
 	"bytes"
-	"throosea.com/log"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
+	"path/filepath"
+	"sync"
+	"throosea.com/fatima"
+	"throosea.com/log"
+	"time"
 )
 
 const (
-	fileWebhookSlack = "webhook.slack"
-	attachmentsColor = "#00FF00"
-	userName = "FATIMA"
-	footerIcon = "https://platform.slack-edge.com/img/default_application_icon.png"
+	fileWebhookSlack         = "webhook.slack"
+	attachmentsColor         = "#00FF00"
+	userName                 = "FATIMA"
+	footerIcon               = "https://platform.slack-edge.com/img/default_application_icon.png"
 	applicationJsonUtf8Value = "application/json;charset=UTF-8"
 )
 
@@ -57,21 +57,21 @@ func NewSlackNotificationWithKey(fatimaRuntime fatima.FatimaRuntime, key string)
 }
 
 type SlackNotification struct {
-	fatimaRuntime	fatima.FatimaRuntime
-	key				string
-	lastLoadingTime	time.Time
-	config			SlackConfig
-	mutex			*sync.Mutex
+	fatimaRuntime   fatima.FatimaRuntime
+	key             string
+	lastLoadingTime time.Time
+	config          SlackConfig
+	mutex           *sync.Mutex
 }
 
 type SlackConfig struct {
-	Active		bool
-	Alarm		bool
-	Event		bool
-	Url			string
+	Active bool
+	Alarm  bool
+	Event  bool
+	Url    string
 }
 
-func (s *SlackNotification) loading()	{
+func (s *SlackNotification) loading() {
 	s.lastLoadingTime = time.Now()
 	if s.fatimaRuntime == nil {
 		log.Warn("fatimaRuntime is nil")
@@ -81,17 +81,26 @@ func (s *SlackNotification) loading()	{
 	webhookConfigFile := filepath.Join(s.fatimaRuntime.GetEnv().GetFolderGuide().GetDataFolder(), fileWebhookSlack)
 	dataBytes, err := ioutil.ReadFile(webhookConfigFile)
 	if err != nil {
+		if log.IsDebugEnabled() {
+			log.Debug("fail to read file [%s] : %s", webhookConfigFile, err.Error())
+		}
 		return
 	}
 
 	var data map[string]SlackConfig
 	err = json.Unmarshal(dataBytes, &data)
 	if err != nil {
+		if log.IsDebugEnabled() {
+			log.Debug("invalid SlackConfig json struct : %s", err.Error())
+		}
 		return
 	}
 
 	c, ok := data[s.key]
 	if !ok {
+		if log.IsDebugEnabled() {
+			log.Debug("not found key [%s] in slack webhook config", s.key)
+		}
 		return
 	}
 
@@ -111,6 +120,9 @@ func (s *SlackNotification) isEventWritable() bool {
 		s.loading()
 	}
 	if !s.config.Active || !s.config.Event || len(s.config.Url) < 6 {
+		if log.IsDebugEnabled() {
+			log.Debug("slackConfig not event writable...")
+		}
 		return false
 	}
 	return true
@@ -133,7 +145,7 @@ func (s *SlackNotification) SendEvent(message string) {
 		return
 	}
 
-	go func()	{
+	go func() {
 		sendEventToSlack(s.config.Url, b, message)
 	}()
 }
