@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.23.0
 // 	protoc        v3.3.0
-// source: fatima.message.v1.proto
+// source: saturn.saturn.fatima.message.v1.proto
 
 // *****************************
 // generated from saturn idl
@@ -321,8 +321,8 @@ type ResponseError struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	GrpcResponse ResponseError_GrpcResponse `protobuf:"varint,1,opt,name=grpcResponse,proto3,enum=fatima.message.v1.ResponseError_GrpcResponse" json:"grpcResponse,omitempty"`
-	Code         ResponseError_ErrorCode    `protobuf:"varint,2,opt,name=code,proto3,enum=fatima.message.v1.ResponseError_ErrorCode" json:"code,omitempty"`
+	GrpcResponse ResponseError_GrpcResponse `protobuf:"varint,1,opt,name=grpcResponse,proto3,enum=saturn.fatima.message.v1.ResponseError_GrpcResponse" json:"grpcResponse,omitempty"`
+	Code         ResponseError_ErrorCode    `protobuf:"varint,2,opt,name=code,proto3,enum=saturn.fatima.message.v1.ResponseError_ErrorCode" json:"code,omitempty"`
 	Value        string                     `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
 	Desc         string                     `protobuf:"bytes,4,opt,name=desc,proto3" json:"desc,omitempty"`
 }
@@ -464,20 +464,20 @@ func file_fatima_message_v1_proto_rawDescGZIP() []byte {
 var file_fatima_message_v1_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
 var file_fatima_message_v1_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_fatima_message_v1_proto_goTypes = []interface{}{
-	(ResponseError_GrpcResponse)(0),   // 0: fatima.message.v1.ResponseError.GrpcResponse
-	(ResponseError_ErrorCode)(0),      // 1: fatima.message.v1.ResponseError.ErrorCode
-	(*SendFatimaMessageRequest)(nil),  // 2: fatima.message.v1.SendFatimaMessageRequest
-	(*SendFatimaMessageResponse)(nil), // 3: fatima.message.v1.SendFatimaMessageResponse
-	(*ResponseSuccess)(nil),           // 4: fatima.message.v1.ResponseSuccess
-	(*ResponseError)(nil),             // 5: fatima.message.v1.ResponseError
+	(ResponseError_GrpcResponse)(0),   // 0: saturn.fatima.message.v1.ResponseError.GrpcResponse
+	(ResponseError_ErrorCode)(0),      // 1: saturn.fatima.message.v1.ResponseError.ErrorCode
+	(*SendFatimaMessageRequest)(nil),  // 2: saturn.fatima.message.v1.SendFatimaMessageRequest
+	(*SendFatimaMessageResponse)(nil), // 3: saturn.fatima.message.v1.SendFatimaMessageResponse
+	(*ResponseSuccess)(nil),           // 4: saturn.fatima.message.v1.ResponseSuccess
+	(*ResponseError)(nil),             // 5: saturn.fatima.message.v1.ResponseError
 }
 var file_fatima_message_v1_proto_depIdxs = []int32{
-	4, // 0: fatima.message.v1.SendFatimaMessageResponse.success:type_name -> fatima.message.v1.ResponseSuccess
-	5, // 1: fatima.message.v1.SendFatimaMessageResponse.error:type_name -> fatima.message.v1.ResponseError
-	0, // 2: fatima.message.v1.ResponseError.grpcResponse:type_name -> fatima.message.v1.ResponseError.GrpcResponse
-	1, // 3: fatima.message.v1.ResponseError.code:type_name -> fatima.message.v1.ResponseError.ErrorCode
-	2, // 4: fatima.message.v1.FatimaMessageService.SendFatimaMessage:input_type -> fatima.message.v1.SendFatimaMessageRequest
-	3, // 5: fatima.message.v1.FatimaMessageService.SendFatimaMessage:output_type -> fatima.message.v1.SendFatimaMessageResponse
+	4, // 0: saturn.fatima.message.v1.SendFatimaMessageResponse.success:type_name -> saturn.fatima.message.v1.ResponseSuccess
+	5, // 1: saturn.fatima.message.v1.SendFatimaMessageResponse.error:type_name -> saturn.fatima.message.v1.ResponseError
+	0, // 2: saturn.fatima.message.v1.ResponseError.grpcResponse:type_name -> saturn.fatima.message.v1.ResponseError.GrpcResponse
+	1, // 3: saturn.fatima.message.v1.ResponseError.code:type_name -> saturn.fatima.message.v1.ResponseError.ErrorCode
+	2, // 4: saturn.fatima.message.v1.FatimaMessageService.SendFatimaMessage:input_type -> saturn.fatima.message.v1.SendFatimaMessageRequest
+	3, // 5: saturn.fatima.message.v1.FatimaMessageService.SendFatimaMessage:output_type -> saturn.fatima.message.v1.SendFatimaMessageResponse
 	5, // [5:6] is the sub-list for method output_type
 	4, // [4:5] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name
@@ -590,7 +590,7 @@ func NewFatimaMessageServiceClient(cc grpc.ClientConnInterface) FatimaMessageSer
 
 func (c *fatimaMessageServiceClient) SendFatimaMessage(ctx context.Context, in *SendFatimaMessageRequest, opts ...grpc.CallOption) (*SendFatimaMessageResponse, error) {
 	out := new(SendFatimaMessageResponse)
-	err := c.cc.Invoke(ctx, "/fatima.message.v1.FatimaMessageService/SendFatimaMessage", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/saturn.fatima.message.v1.FatimaMessageService/SendFatimaMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -624,7 +624,7 @@ func _FatimaMessageService_SendFatimaMessage_Handler(srv interface{}, ctx contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/fatima.message.v1.FatimaMessageService/SendFatimaMessage",
+		FullMethod: "/saturn.fatima.message.v1.FatimaMessageService/SendFatimaMessage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FatimaMessageServiceServer).SendFatimaMessage(ctx, req.(*SendFatimaMessageRequest))
@@ -633,7 +633,7 @@ func _FatimaMessageService_SendFatimaMessage_Handler(srv interface{}, ctx contex
 }
 
 var _FatimaMessageService_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "fatima.message.v1.FatimaMessageService",
+	ServiceName: "saturn.fatima.message.v1.FatimaMessageService",
 	HandlerType: (*FatimaMessageServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -642,5 +642,5 @@ var _FatimaMessageService_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "fatima.message.v1.proto",
+	Metadata: "saturn.saturn.fatima.message.v1.proto",
 }
