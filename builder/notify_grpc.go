@@ -82,7 +82,7 @@ func (s *GrpcSystemNotifyHandler) consumeQueue() {
 
 			ok := s.sendToSaturn(req)
 			if !ok {
-				continue
+				break
 			}
 
 			// success
