@@ -35,7 +35,7 @@ func NewFatimaMessageServiceClient(cc grpc.ClientConnInterface) FatimaMessageSer
 
 func (c *fatimaMessageServiceClient) SendFatimaMessage(ctx context.Context, in *SendFatimaMessageRequest, opts ...grpc.CallOption) (*SendFatimaMessageResponse, error) {
 	out := new(SendFatimaMessageResponse)
-	err := c.cc.Invoke(ctx, "/saturn.fatima.message.v1.FatimaMessageService/SendFatimaMessage", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/fatima.message.v1.FatimaMessageService/SendFatimaMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func _FatimaMessageService_SendFatimaMessage_Handler(srv interface{}, ctx contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/saturn.fatima.message.v1.FatimaMessageService/SendFatimaMessage",
+		FullMethod: "/fatima.message.v1.FatimaMessageService/SendFatimaMessage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FatimaMessageServiceServer).SendFatimaMessage(ctx, req.(*SendFatimaMessageRequest))
@@ -92,7 +92,7 @@ func _FatimaMessageService_SendFatimaMessage_Handler(srv interface{}, ctx contex
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var FatimaMessageService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "saturn.fatima.message.v1.FatimaMessageService",
+	ServiceName: "fatima.message.v1.FatimaMessageService",
 	HandlerType: (*FatimaMessageServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
