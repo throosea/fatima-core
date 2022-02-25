@@ -39,7 +39,7 @@ const (
 	propPredefineSaturnPort = "var.saturn.port"
 	valueDefaultAddress     = ":4389"
 	maxQueueSize            = 4096
-	dropQueueSize           = 2048 // drop if queue fulls at least half size
+	dropQueueSize           = 1024 // drop if queue fulls at least half size
 )
 
 type GrpcSystemNotifyHandler struct {
