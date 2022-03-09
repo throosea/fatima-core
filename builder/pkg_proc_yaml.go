@@ -29,24 +29,24 @@
 package builder
 
 import (
+	"bytes"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"sort"
 	"strings"
 	"throosea.com/fatima"
 	"throosea.com/log"
-	"bytes"
-	"sort"
 )
 
 type ProcessItem struct {
-	Gid      	int    `yaml:"gid"`
-	Name     	string `yaml:"name"`
-	Loglevel 	string `yaml:"loglevel"`
-	Hb       	bool   `yaml:"hb,omitempty"`
-	Path     	string `yaml:"path,omitempty"`
-	Grep     	string `yaml:"grep,omitempty"`
-	Startmode	int		`yaml:"startmode,omitempty"`
+	Gid       int    `yaml:"gid"`
+	Name      string `yaml:"name"`
+	Loglevel  string `yaml:"loglevel"`
+	Hb        bool   `yaml:"hb,omitempty"`
+	Path      string `yaml:"path,omitempty"`
+	Grep      string `yaml:"grep,omitempty"`
+	Startmode int    `yaml:"startmode,omitempty"`
 }
 
 func (p ProcessItem) GetGid() int {
@@ -70,11 +70,15 @@ func (p ProcessItem) GetGrep() string {
 }
 
 func (p ProcessItem) GetStartMode() fatima.ProcessStartMode {
-	switch p.Startmode  {
-	case 1 :		return fatima.StartModeAlone
-	case 2 :		return fatima.StartModeByHA
-	case 3 :		return fatima.StartModeByPS
-	default : 		return fatima.StartModeByJuno
+	switch p.Startmode {
+	case 1:
+		return fatima.StartModeAlone
+	case 2:
+		return fatima.StartModeByHA
+	case 3:
+		return fatima.StartModeByPS
+	default:
+		return fatima.StartModeByJuno
 	}
 }
 
@@ -94,10 +98,10 @@ func (a GroupItems) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a GroupItems) Less(i, j int) bool { return a[i].Id < a[j].Id }
 
 type YamlFatimaPackageConfig struct {
-	env       fatima.FatimaEnv
+	env        fatima.FatimaEnv
 	predefines fatima.Predefines
-	Groups    []GroupItem   `yaml:"group,flow"`
-	Processes []ProcessItem `yaml:"process"`
+	Groups     []GroupItem   `yaml:"group,flow"`
+	Processes  []ProcessItem `yaml:"process"`
 }
 
 func NewYamlFatimaPackageConfig(env fatima.FatimaEnv) *YamlFatimaPackageConfig {
@@ -119,7 +123,7 @@ func (y *YamlFatimaPackageConfig) OrderByGroup() {
 		}
 	}
 
-	for i:=1; i<len(y.Groups); i++ {
+	for i := 1; i < len(y.Groups); i++ {
 		for _, v := range y.Processes {
 			if v.Gid == y.Groups[i].Id {
 				ordered = append(ordered, v)
@@ -139,11 +143,11 @@ func (y *YamlFatimaPackageConfig) Save() {
 
 	var comment = "---\n" +
 		"# this is fatima-package.yaml sample\n" +
-		"# group (define column)\n" +
-		"# process list (define column)\n" +
-		"#  gid, name, path, qclear, qkey, hb\n" +
-		"# non-fatima process\n" +
-		"# startmode : 0(always started by juno), 1(not started by juno), 2(by HA), 3(by PS)\n"
+		"# group (group id, group name)\n" +
+		"# process list\n" +
+		"# column : gid, name, loglevel, path, startmode\n" +
+		"# - gid : group id\n" +
+		"# - startmode : default 0(always started by juno), 1(not started by juno), 2(by HA), 3(by PS)\n"
 
 	var buff bytes.Buffer
 	buff.WriteString(comment)
@@ -251,13 +255,11 @@ func buildLogLevel(s string) log.LogLevel {
 	return log.LOG_TRACE
 }
 
-
-
 type DummyFatimaPackageConfig struct {
-	env       fatima.FatimaEnv
+	env        fatima.FatimaEnv
 	predefines fatima.Predefines
-	Groups    []GroupItem   `yaml:"group,flow"`
-	Processes []ProcessItem `yaml:"process"`
+	Groups     []GroupItem   `yaml:"group,flow"`
+	Processes  []ProcessItem `yaml:"process"`
 }
 
 func NewDummyFatimaPackageConfig(env fatima.FatimaEnv) *DummyFatimaPackageConfig {
@@ -280,4 +282,3 @@ func (y *DummyFatimaPackageConfig) GetProcByName(name string) fatima.FatimaPkgPr
 	item.Loglevel = "debug"
 	return item
 }
-
