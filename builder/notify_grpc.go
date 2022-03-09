@@ -29,6 +29,7 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"strings"
 	"throosea.com/fatima"
 	proto "throosea.com/fatima/builder/fatima.message.v1"
@@ -137,7 +138,7 @@ func (s *GrpcSystemNotifyHandler) connectSaturn() {
 		ctx,
 		s.saturnAddress,
 		grpc.WithBlock(),
-		grpc.WithInsecure())
+		grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		log.Warn("fail to connect saturn : %s", err.Error())

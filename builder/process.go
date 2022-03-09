@@ -440,23 +440,24 @@ func init() {
 
 	fatimaProcess.status = proc_status_created
 	fatimaProcess.env = newFatimaProcessEnv()
+
+	// init log
+	logPref := log.NewPreferenceWithProcName(fatimaProcess.env.GetFolderGuide().GetLogFolder(), fatimaProcess.env.GetSystemProc().GetProgramName())
+	logPref.DeliveryMode = log.DELIVERY_MODE_ASYNC
+	log.Initialize(logPref)
+
 	fatimaProcess.platform = createPlatformSupport()
 	err := fatimaProcess.platform.EnsureSingleInstance(fatimaProcess.env.GetSystemProc())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(0)
-		//fatimaProcess.status = proc_status_shutdown
 	}
-	//fatimaProcess.notifyHandler, err = NewDefaultSystemNotifyHandler(fatimaProcess)
+
 	fatimaProcess.notifyHandler, err = NewGrpcSystemNotifyHandler(fatimaProcess)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(0)
 	}
-
-	logPref := log.NewPreferenceWithProcName(fatimaProcess.env.GetFolderGuide().GetLogFolder(), fatimaProcess.env.GetSystemProc().GetProgramName())
-	logPref.DeliveryMode = log.DELIVERY_MODE_ASYNC
-	log.Initialize(logPref)
 
 	log.Warn("%s is starting", fatimaProcess.env.GetSystemProc().GetProgramName())
 
