@@ -27,7 +27,9 @@ package builder
 
 import (
 	"context"
+	"fmt"
 	"google.golang.org/grpc"
+	"strings"
 	"throosea.com/fatima"
 	proto "throosea.com/fatima/builder/fatima.message.v1"
 	"throosea.com/fatima/monitor"
@@ -36,24 +38,33 @@ import (
 )
 
 const (
-	propPredefineSaturnPort = "var.saturn.port"
-	valueDefaultAddress     = ":4389"
-	maxQueueSize            = 4096
-	dropQueueSize           = 1024 // drop if queue fulls at least half size
+	propPredefineSaturnPort   = "var.saturn.port"
+	propPredefineSaturnEnable = "var.saturn.enable"
+	valueDefaultAddress       = ":4389"
+	maxQueueSize              = 4096
+	dropQueueSize             = 1024 // drop if queue fulls at least half size
 )
 
 type GrpcSystemNotifyHandler struct {
 	fatimaRuntime fatima.FatimaRuntime
+	saturnEnabled bool
 	saturnAddress string
 	conn          *grpc.ClientConn
 	queue         chan []byte
 }
 
 func NewGrpcSystemNotifyHandler(fatimaRuntime fatima.FatimaRuntime) (monitor.SystemNotifyHandler, error) {
+
 	handler := GrpcSystemNotifyHandler{fatimaRuntime: fatimaRuntime}
 	handler.queue = make(chan []byte, maxQueueSize)
+	handler.saturnEnabled = true
 
-	handler.saturnAddress = buildServiceAddress(NewPropertyPredefineReader(fatimaRuntime.GetEnv()))
+	var err error
+	handler.saturnAddress, err = buildSaturnServiceAddress(NewPropertyPredefineReader(fatimaRuntime.GetEnv()))
+	if err != nil {
+		log.Warn("NewGrpcSystemNotifyHandler : %s", err.Error())
+		handler.saturnEnabled = false
+	}
 
 	go handler.consumeQueue()
 
@@ -63,6 +74,10 @@ func NewGrpcSystemNotifyHandler(fatimaRuntime fatima.FatimaRuntime) (monitor.Sys
 func (s *GrpcSystemNotifyHandler) consumeQueue() {
 	for notifyItem := range s.queue {
 		if len(notifyItem) < 3 {
+			continue
+		}
+
+		if !s.saturnEnabled {
 			continue
 		}
 
@@ -132,13 +147,22 @@ func (s *GrpcSystemNotifyHandler) connectSaturn() {
 	s.conn = gConn
 }
 
-func buildServiceAddress(predefinedReader *PropertyPredefineReader) string {
+var errSaturnDisabled = fmt.Errorf("saturn disabled from configuration")
+
+func buildSaturnServiceAddress(predefinedReader *PropertyPredefineReader) (string, error) {
+	useSaturn, ok := predefinedReader.GetDefine(propPredefineSaturnEnable)
+	if ok {
+		if strings.TrimSpace(strings.ToLower(useSaturn)) == "false" {
+			// will not use saturn...
+			return "", errSaturnDisabled
+		}
+	}
 	address, ok := predefinedReader.GetDefine(propPredefineSaturnPort)
 	if !ok {
-		return valueDefaultAddress
+		return valueDefaultAddress, nil
 	}
 
-	return address
+	return address, nil
 }
 
 var (
