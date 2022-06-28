@@ -24,14 +24,15 @@
 package infra
 
 import (
+	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 	"throosea.com/fatima"
 	"throosea.com/fatima/builder"
-	"throosea.com/fatima/monitor"
-	"time"
-	"net/http"
-	"throosea.com/log"
 	"throosea.com/fatima/lib"
-	"fmt"
+	"throosea.com/fatima/monitor"
+	"throosea.com/log"
+	"time"
 )
 
 type ProcessCoreWorker interface {
@@ -97,7 +98,7 @@ func (this *DefaultProcessInteractor) Initialize() bool {
 	return initializeComponent()
 }
 
-func (this *DefaultProcessInteractor) Goaway()  {
+func (this *DefaultProcessInteractor) Goaway() {
 	goawayComponent()
 }
 
@@ -137,7 +138,6 @@ func (this *DefaultProcessInteractor) Shutdown() {
 func (this *DefaultProcessInteractor) RegistMeasureUnit(unit monitor.SystemMeasurable) {
 	this.measurement.registUnit(unit)
 }
-
 
 func (this *DefaultProcessInteractor) pprofService() {
 	addr, ok := this.runtimeProcess.GetConfig().GetValue(builder.GOFATIMA_PROP_PPROF_ADDRESS)
