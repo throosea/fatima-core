@@ -1,38 +1,39 @@
-//
-// Licensed to the Apache Software Foundation (ASF) under one
-// or more contributor license agreements.  See the NOTICE file
-// distributed with p work for additional information
-// regarding copyright ownership.  The ASF licenses p file
-// to you under the Apache License, Version 2.0 (the
-// "License"); you may not use p file except in compliance
-// with the License.  You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing,
-// software distributed under the License is distributed on an
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, either express or implied.  See the License for the
-// specific language governing permissions and limitations
-// under the License.
-//
-// @project fatima
-// @author DeockJin Chung (jin.freestyle@gmail.com)
-// @date 2017. 3. 6. PM 7:42
-//
-
+//go:build linux
 // +build linux
 
-package builder
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with p work for additional information
+ * regarding copyright ownership.  The ASF licenses p file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use p file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * @project fatima
+ * @author DeockJin Chung (jin.freestyle@gmail.com)
+ * @date 22. 8. 31. 오전 11:28
+ */
+
+package platform
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
-	"errors"
 	"throosea.com/fatima"
 )
 
@@ -44,8 +45,8 @@ import (
 type OSPlatform struct {
 }
 
-func (this *OSPlatform) EnsureSingleInstance(proc fatima.SystemProc) error {
-	ps, err := this.GetProcesses()
+func (p *OSPlatform) EnsureSingleInstance(proc fatima.SystemProc) error {
+	ps, err := p.GetProcesses()
 	if err != nil {
 		return nil
 	}
@@ -62,7 +63,7 @@ func (this *OSPlatform) EnsureSingleInstance(proc fatima.SystemProc) error {
 	return nil
 }
 
-func (this *OSPlatform) GetProcesses() ([]fatima.Process, error) {
+func (p *OSPlatform) GetProcesses() ([]fatima.Process, error) {
 	d, err := os.Open("/proc")
 	if err != nil {
 		return nil, err
@@ -110,6 +111,10 @@ func (this *OSPlatform) GetProcesses() ([]fatima.Process, error) {
 	return results, nil
 }
 
+func (p *OSPlatform) Dup3(oldfd int, newfd int, flags int) (err error) {
+	return syscall.Dup3(oldfd, newfd, flags)
+}
+
 // UnixProcess is an implementation of Process that contains Unix-specific
 // fields and information.
 type UnixProcess struct {
@@ -122,21 +127,21 @@ type UnixProcess struct {
 	binary string
 }
 
-func (p *UnixProcess) Pid() int {
-	return p.pid
+func (u *UnixProcess) Pid() int {
+	return u.pid
 }
 
-func (p *UnixProcess) PPid() int {
-	return p.ppid
+func (u *UnixProcess) PPid() int {
+	return u.ppid
 }
 
-func (p *UnixProcess) Executable() string {
-	return p.binary
+func (u *UnixProcess) Executable() string {
+	return u.binary
 }
 
 // Refresh reloads all the data associated with reader process.
-func (p *UnixProcess) Refresh() error {
-	statPath := fmt.Sprintf("/proc/%d/stat", p.pid)
+func (u *UnixProcess) Refresh() error {
+	statPath := fmt.Sprintf("/proc/%d/stat", u.pid)
 	dataBytes, err := ioutil.ReadFile(statPath)
 	if err != nil {
 		return err
@@ -146,16 +151,16 @@ func (p *UnixProcess) Refresh() error {
 	data := string(dataBytes)
 	binStart := strings.IndexRune(data, '(') + 1
 	binEnd := strings.IndexRune(data[binStart:], ')')
-	p.binary = data[binStart : binStart+binEnd]
+	u.binary = data[binStart : binStart+binEnd]
 
 	// Move past the image name and start parsing the rest
 	data = data[binStart+binEnd+2:]
 	_, err = fmt.Sscanf(data,
 		"%c %d %d %d",
-		&p.state,
-		&p.ppid,
-		&p.pgrp,
-		&p.sid)
+		&u.state,
+		&u.ppid,
+		&u.pgrp,
+		&u.sid)
 
 	return err
 }

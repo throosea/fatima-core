@@ -36,6 +36,7 @@ import (
 	"strings"
 	"syscall"
 	"throosea.com/fatima"
+	"throosea.com/fatima/builder/platform"
 	"throosea.com/fatima/monitor"
 	"throosea.com/log"
 )
@@ -418,8 +419,8 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 		}
 
 		if redirectConsole {
-			syscall.Dup2(int(outfile.Fd()), 1) // stdout
-			syscall.Dup2(int(outfile.Fd()), 2) // stderr
+			process.platform.Dup3(int(outfile.Fd()), 1, 0) // stdout
+			process.platform.Dup3(int(outfile.Fd()), 2, 0) // stderr
 		}
 	}
 }
@@ -473,7 +474,7 @@ func newFatimaProcessEnv() *FatimaProcessEnv {
 }
 
 func createPlatformSupport() fatima.PlatformSupport {
-	return new(OSPlatform)
+	return new(platform.OSPlatform)
 	/*
 		switch runtime.GOOS {
 		case "linux":

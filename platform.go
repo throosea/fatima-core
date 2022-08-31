@@ -23,8 +23,6 @@
 
 package fatima
 
-import ()
-
 /**
  * @author jin.freestyle@gmail.com
  *
@@ -45,4 +43,5 @@ type Process interface {
 type PlatformSupport interface {
 	EnsureSingleInstance(proc SystemProc) error
 	GetProcesses() ([]Process, error)
+	Dup3(oldfd int, newfd int, flags int) (err error)
 }

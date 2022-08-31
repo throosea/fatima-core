@@ -26,7 +26,6 @@ package infra
 import (
 	"fmt"
 	"net/http"
-	_ "net/http/pprof"
 	"throosea.com/fatima"
 	"throosea.com/fatima/builder"
 	"throosea.com/fatima/lib"
