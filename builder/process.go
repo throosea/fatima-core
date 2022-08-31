@@ -378,6 +378,7 @@ func (process *FatimaRuntimeProcess) getThisPkgProc() fatima.FatimaPkgProc {
 }
 
 func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgProc, processType fatima.FatimaProcessType) {
+	fmt.Printf("STEP0\n")
 	procFolder := process.env.GetFolderGuide().GetAppProcFolder()
 
 	// remove old output files
@@ -401,6 +402,7 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 	err := ioutil.WriteFile(filepath.Join(procFolder, process.env.GetSystemProc().GetProgramName()+".pid"), pid, 0644)
 	check(err)
 
+	fmt.Printf("STEP1\n")
 	if processType == fatima.PROCESS_TYPE_GENERAL {
 		// redirect output to file
 		outfile, err := os.Create(
@@ -409,6 +411,7 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 				fmt.Sprintf("%s.%d.output", process.env.GetSystemProc().GetProgramName(), process.env.GetSystemProc().GetPid())))
 		check(err)
 
+		fmt.Printf("STEP2\n")
 		//os.Stdout = outfile
 		//os.Stderr = outfile
 
@@ -418,7 +421,9 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 			redirectConsole = true // default
 		}
 
+		fmt.Printf("STEP3\n")
 		if redirectConsole {
+			fmt.Printf("STEP4\n")
 			err = process.platform.Dup3(int(outfile.Fd()), 1, 0) // stdout
 			if err != nil {
 				fmt.Printf("stdout process.platform.Dup3 error : %s\n", err.Error())
