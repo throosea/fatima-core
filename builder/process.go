@@ -421,15 +421,15 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 		if redirectConsole {
 			err = process.platform.Dup3(int(outfile.Fd()), 1, 0) // stdout
 			if err != nil {
-				fmt.Errorf("stdout process.platform.Dup3 error : %s", err.Error())
+				fmt.Printf("stdout process.platform.Dup3 error : %s\n", err.Error())
 			} else {
-				fmt.Errorf("stdout dup3 success")
+				fmt.Printf("stdout dup3 success\n")
 			}
 			err = process.platform.Dup3(int(outfile.Fd()), 2, 0) // stderr
 			if err != nil {
-				fmt.Errorf("stderr process.platform.Dup3 error : %s", err.Error())
+				fmt.Printf("stderr process.platform.Dup3 error : %s\n", err.Error())
 			} else {
-				fmt.Errorf("stderr dup3 success")
+				fmt.Printf("stderr dup3 success\n")
 			}
 		}
 	}
