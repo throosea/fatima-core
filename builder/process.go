@@ -36,6 +36,7 @@ import (
 	"strings"
 	"syscall"
 	"throosea.com/fatima"
+	"throosea.com/fatima/builder/platform"
 	"throosea.com/fatima/monitor"
 	"throosea.com/log"
 )
@@ -408,9 +409,6 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 				fmt.Sprintf("%s.%d.output", process.env.GetSystemProc().GetProgramName(), process.env.GetSystemProc().GetPid())))
 		check(err)
 
-		//os.Stdout = outfile
-		//os.Stderr = outfile
-
 		var redirectConsole bool
 		redirectConsole, err = process.GetConfig().GetBool(GOFATIMA_REDIRECT_CONSOLE)
 		if err != nil {
@@ -418,8 +416,14 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 		}
 
 		if redirectConsole {
-			syscall.Dup2(int(outfile.Fd()), 1) // stdout
-			syscall.Dup2(int(outfile.Fd()), 2) // stderr
+			err = process.platform.Dup3(int(outfile.Fd()), 1, 0) // stdout
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "dup3 stdout error : %s\n", err.Error())
+			}
+			err = process.platform.Dup3(int(outfile.Fd()), 2, 0) // stderr
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "dup3 stderr error : %s\n", err.Error())
+			}
 		}
 	}
 }
@@ -473,7 +477,7 @@ func newFatimaProcessEnv() *FatimaProcessEnv {
 }
 
 func createPlatformSupport() fatima.PlatformSupport {
-	return new(OSPlatform)
+	return new(platform.OSPlatform)
 	/*
 		switch runtime.GOOS {
 		case "linux":
