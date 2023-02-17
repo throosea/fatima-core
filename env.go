@@ -23,8 +23,6 @@
 
 package fatima
 
-import ()
-
 type SystemProc interface {
 	GetPid() int
 	GetUid() int
@@ -36,6 +34,8 @@ type SystemProc interface {
 
 type FolderGuide interface {
 	GetFatimaHome() string
+
+	// GetPackageProcFile return package process configuration file ($FATIMA_HOME/conf/fatima-package.yaml)
 	GetPackageProcFile() string
 	GetAppProcFolder() string
 	GetAppFolder() string

@@ -50,6 +50,7 @@ func ensureDirectory(path string, forceCreate bool) error {
 	return nil
 }
 
+// readProperties read properties (key=value pairs)
 func readProperties(path string) (map[string]string, error) {
 	resolved := make(map[string]string)
 	file, err := os.Open(path)

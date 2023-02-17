@@ -41,7 +41,10 @@ type Process interface {
 }
 
 type PlatformSupport interface {
+	// EnsureSingleInstance ensure (only 1) single process running
 	EnsureSingleInstance(proc SystemProc) error
+	// GetProcesses load all process list
 	GetProcesses() ([]Process, error)
+	// Dup3 duplicate fd
 	Dup3(oldfd int, newfd int, flags int) (err error)
 }

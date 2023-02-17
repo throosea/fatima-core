@@ -35,7 +35,7 @@ type DefaultProcessBuilder struct {
 	config        fatima.Config
 	monitor       monitor.SystemStatusMonitor
 	systemAware   monitor.FatimaSystemAware
-	processType	  fatima.FatimaProcessType
+	processType   fatima.FatimaProcessType
 }
 
 func (this *DefaultProcessBuilder) GetPkgProcConfig() fatima.FatimaPkgProcConfig {
@@ -62,6 +62,7 @@ func (this *DefaultProcessBuilder) GetSystemAware() monitor.FatimaSystemAware {
 	return this.systemAware
 }
 
+// getRuntimeBuilder return fatima runtime builder
 func getRuntimeBuilder(env fatima.FatimaEnv, processType fatima.FatimaProcessType) builder.FatimaRuntimeBuilder {
 	processBuilder := new(DefaultProcessBuilder)
 	processBuilder.processType = processType
@@ -71,7 +72,11 @@ func getRuntimeBuilder(env fatima.FatimaEnv, processType fatima.FatimaProcessTyp
 		// USER INTERACTIVE
 		processBuilder.pkgProcConfig = builder.NewDummyFatimaPackageConfig(env)
 	}
+
+	// predefines : serving fatima package global(shared) properties
 	processBuilder.predefines = builder.NewPropertyPredefineReader(env)
+
+	// load configuration
 	processBuilder.config = builder.NewPropertyConfigReader(env, processBuilder.predefines)
 
 	return processBuilder

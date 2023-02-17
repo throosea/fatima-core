@@ -29,12 +29,16 @@ import (
 	"time"
 )
 
+// newSystemMeasureManagement process measure. e.g) Heap size, gc cycle count, ....
 func newSystemMeasureManagement(runtimeProcess *builder.FatimaRuntimeProcess) *SystemMeasureManagement {
 	mgmt := new(SystemMeasureManagement)
 	mgmt.runtimeProcess = runtimeProcess
 	mgmt.writer = newMeasureFileWriter(runtimeProcess.GetEnv())
 	mgmt.units = make([]monitor.SystemMeasurable, 0)
+
+	// currently only process measurement provided
 	mgmt.registUnit(newProcessMeasurement())
+
 	return mgmt
 }
 

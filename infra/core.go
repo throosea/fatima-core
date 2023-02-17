@@ -57,8 +57,10 @@ type DefaultProcessInteractor struct {
 func NewProcessInteractor(runtimeProcess *builder.FatimaRuntimeProcess) *DefaultProcessInteractor {
 	instance := new(DefaultProcessInteractor)
 	instance.runtimeProcess = runtimeProcess
+	// monitor : Active/Standby, Primary/Secondary
 	instance.monitor = newCentralFilebaseManagement(runtimeProcess.GetEnv())
 	instance.awareManager = newSystemAwareManagement(runtimeProcess, instance.monitor)
+	// special type of FatimaComponent. usually we need create 'Reader' type first
 	instance.readers = make([]fatima.FatimaIOReader, 0)
 	instance.measurement = newSystemMeasureManagement(runtimeProcess)
 

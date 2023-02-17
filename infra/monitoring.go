@@ -25,8 +25,8 @@ package infra
 
 import (
 	"throosea.com/fatima/builder"
-	"throosea.com/log"
 	"throosea.com/fatima/monitor"
+	"throosea.com/log"
 )
 
 type SystemAwareManagement struct {
@@ -40,7 +40,9 @@ func newSystemAwareManagement(runtimeProcess *builder.FatimaRuntimeProcess, mon 
 	instance := new(SystemAwareManagement)
 
 	instance.runtimeProcess = runtimeProcess
+	// awareHA observers
 	instance.awareHA = make([]monitor.FatimaSystemHAAware, 0)
+	// awarePS observers
 	instance.awarePS = make([]monitor.FatimaSystemPSAware, 0)
 	instance.monitor = mon
 	currentStatus := runtimeProcess.GetSystemStatus().(*builder.FatimaPackageSystemStatus)
@@ -78,6 +80,7 @@ func (this *SystemAwareManagement) SystemPSStatusChanged(newPSStatus monitor.PSS
 func (this *SystemAwareManagement) Process() {
 	currentStatus := this.runtimeProcess.GetSystemStatus().(*builder.FatimaPackageSystemStatus)
 
+	// check and deliver PS change
 	if ps, ok := this.monitor.GetPSStatus(); ok {
 		oldps := currentStatus.GetPSStatus()
 		if oldps != ps {
@@ -87,6 +90,8 @@ func (this *SystemAwareManagement) Process() {
 			}()
 		}
 	}
+
+	// check and deliver HA change
 	if ha, ok := this.monitor.GetHAStatus(); ok {
 		oldha := currentStatus.GetHAStatus()
 		if oldha != ha {
@@ -97,6 +102,7 @@ func (this *SystemAwareManagement) Process() {
 		}
 	}
 
+	// check and deliver loglevel change
 	if logLevel, ok := this.monitor.GetLogLevel(); ok {
 		if this.runtimeProcess.GetLogLevel() != logLevel {
 			log.SetLevel(logLevel)

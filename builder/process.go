@@ -27,7 +27,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -67,6 +66,68 @@ const (
 	tagProcess     = "process"
 )
 
+// process init
+func init() {
+	log.SetLevel(log.LOG_TRACE)
+
+	// handle process signals
+	fatimaProcess.sigs = make(chan os.Signal, 1)
+	signal.Notify(fatimaProcess.sigs, syscall.SIGINT, syscall.SIGKILL, syscall.SIGTERM, syscall.SIGUSR1)
+
+	fatimaProcess.status = proc_status_created
+
+	// load fatima process environment information
+	fatimaProcess.env = newFatimaProcessEnv()
+
+	// throosea.com/log initialize
+	logPref := log.NewPreferenceWithProcName(fatimaProcess.env.GetFolderGuide().GetLogFolder(), fatimaProcess.env.GetSystemProc().GetProgramName())
+	logPref.DeliveryMode = log.DELIVERY_MODE_ASYNC
+	log.Initialize(logPref)
+
+	// create platform support utility
+	fatimaProcess.platform = createPlatformSupport()
+
+	// ensure (only 1) single process running
+	err := fatimaProcess.platform.EnsureSingleInstance(fatimaProcess.env.GetSystemProc())
+	if err != nil {
+		// process already running
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+		os.Exit(0)
+	}
+
+	// create system notify handler
+	// fatima process send any event/alarm to saturn via grpc
+	fatimaProcess.notifyHandler, err = NewGrpcSystemNotifyHandler(fatimaProcess)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+		os.Exit(0)
+	}
+
+	log.Warn("%s is starting", fatimaProcess.env.GetSystemProc().GetProgramName())
+
+	displayDeploymentInfo(fatimaProcess.env)
+}
+
+// load fatima process environment information
+func newFatimaProcessEnv() *FatimaProcessEnv {
+	processEnv := new(FatimaProcessEnv)
+
+	// load process information : pid, uid, username, homedir, gid, programname
+	processEnv.systemProc = newSystemProc()
+
+	// create relative directory list using prograName
+	processEnv.folderGuide = newFolderGuide(processEnv.systemProc)
+
+	// load fatima runtime profile value
+	processEnv.profile = os.Getenv(fatima.ENV_FATIMA_PROFILE)
+	return processEnv
+}
+
+// create platform support utility
+func createPlatformSupport() fatima.PlatformSupport {
+	return new(platform.OSPlatform)
+}
+
 type FatimaProcessStatus uint8
 
 var fatimaProcess *FatimaRuntimeProcess = new(FatimaRuntimeProcess)
@@ -94,6 +155,7 @@ func (env *FatimaProcessEnv) GetProfile() string {
 }
 
 type FatimaRuntimeBuilder interface {
+	// GetPkgProcConfig get process configuration in fatima package
 	GetPkgProcConfig() fatima.FatimaPkgProcConfig
 	GetPredefines() fatima.Predefines
 	GetConfig() fatima.Config
@@ -273,6 +335,7 @@ func (process *FatimaRuntimeProcess) RegistMeasureUnit(unit monitor.SystemMeasur
 	}
 }
 
+// Initialize : initialize process
 func (process *FatimaRuntimeProcess) Initialize(builder FatimaRuntimeBuilder) {
 	if process.status >= proc_status_initializing {
 		return
@@ -295,6 +358,7 @@ func (process *FatimaRuntimeProcess) Initialize(builder FatimaRuntimeBuilder) {
 	process.status = proc_status_ready
 }
 
+// buildLogging build logger decoration
 func buildLogging(builder FatimaRuntimeBuilder) {
 	// log4fatima show method preference
 	v, ok := builder.GetConfig().GetValue(LOG4FATIMA_PROP_SHOW_METHOD)
@@ -368,6 +432,7 @@ func buildLogging(builder FatimaRuntimeBuilder) {
 	}
 }
 
+// getThisPkgProc find 'this' process configuration (gid, name, loglevel, startmode, ...)
 func (process *FatimaRuntimeProcess) getThisPkgProc() fatima.FatimaPkgProc {
 	fatimaProc := process.builder.GetPkgProcConfig().GetProcByName(process.env.GetSystemProc().GetProgramName())
 	if fatimaProc == nil {
@@ -398,7 +463,7 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 
 	// create my pid file
 	pid := []byte(fmt.Sprintf("%d", process.env.GetSystemProc().GetPid()))
-	err := ioutil.WriteFile(filepath.Join(procFolder, process.env.GetSystemProc().GetProgramName()+".pid"), pid, 0644)
+	err := os.WriteFile(filepath.Join(procFolder, process.env.GetSystemProc().GetProgramName()+".pid"), pid, 0644)
 	check(err)
 
 	if processType == fatima.PROCESS_TYPE_GENERAL {
@@ -436,62 +501,6 @@ func getFileSize(p string) int {
 	return int(fi.Size())
 }
 
-func init() {
-	log.SetLevel(log.LOG_TRACE)
-
-	fatimaProcess.sigs = make(chan os.Signal, 1)
-	signal.Notify(fatimaProcess.sigs, syscall.SIGINT, syscall.SIGKILL, syscall.SIGTERM, syscall.SIGUSR1)
-
-	fatimaProcess.status = proc_status_created
-	fatimaProcess.env = newFatimaProcessEnv()
-
-	// init log
-	logPref := log.NewPreferenceWithProcName(fatimaProcess.env.GetFolderGuide().GetLogFolder(), fatimaProcess.env.GetSystemProc().GetProgramName())
-	logPref.DeliveryMode = log.DELIVERY_MODE_ASYNC
-	log.Initialize(logPref)
-
-	fatimaProcess.platform = createPlatformSupport()
-	err := fatimaProcess.platform.EnsureSingleInstance(fatimaProcess.env.GetSystemProc())
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-		os.Exit(0)
-	}
-
-	fatimaProcess.notifyHandler, err = NewGrpcSystemNotifyHandler(fatimaProcess)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-		os.Exit(0)
-	}
-
-	log.Warn("%s is starting", fatimaProcess.env.GetSystemProc().GetProgramName())
-
-	displayDeploymentInfo(fatimaProcess.env)
-}
-
-func newFatimaProcessEnv() *FatimaProcessEnv {
-	processEnv := new(FatimaProcessEnv)
-	processEnv.systemProc = newSystemProc()
-	processEnv.folderGuide = newFolderGuide(processEnv.systemProc)
-	processEnv.profile = os.Getenv(fatima.ENV_FATIMA_PROFILE)
-	return processEnv
-}
-
-func createPlatformSupport() fatima.PlatformSupport {
-	return new(platform.OSPlatform)
-	/*
-		switch runtime.GOOS {
-		case "linux":
-			return new(PlatformLinux)
-		case "darwin":
-			return new(PlatformOSX)
-		default:
-			// windows, freebsd
-			panic("Unsupported fatima arch")
-		}
-		//	return support
-	*/
-}
-
 func check(e error) {
 	if e != nil {
 		panic(fmt.Errorf("fail to build runtime : ", e))
@@ -502,9 +511,10 @@ const (
 	deploymentJsonFile = "deployment.json"
 )
 
+// displayDeploymentInfo print process build information to log
 func displayDeploymentInfo(env fatima.FatimaEnv) {
 	deploymentFile := filepath.Join(env.GetFolderGuide().GetAppFolder(), deploymentJsonFile)
-	file, err := ioutil.ReadFile(deploymentFile)
+	file, err := os.ReadFile(deploymentFile)
 	if err != nil {
 		fmt.Printf("readfile err : %s\n", err.Error())
 		return

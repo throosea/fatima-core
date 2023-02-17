@@ -31,11 +31,12 @@ import (
 
 var process *builder.FatimaRuntimeProcess
 
+// GetFatimaRuntime return fatima runtime
 func GetFatimaRuntime() fatima.FatimaRuntime {
 	return GetGeneralFatimaRuntime()
 }
 
-
+// GetGeneralFatimaRuntime return general(typical process type) purpose fatima runtime
 func GetGeneralFatimaRuntime() fatima.FatimaRuntime {
 	if process != nil {
 		return process
@@ -44,8 +45,10 @@ func GetGeneralFatimaRuntime() fatima.FatimaRuntime {
 	// prepare process
 	process = builder.NewFatimaRuntime()
 
-	// set builder
+	// set runtime builder which has fatima package process information and config
 	builder := getRuntimeBuilder(process.GetEnv(), fatima.PROCESS_TYPE_GENERAL)
+
+	// initializing process using runtime builder
 	process.Initialize(builder)
 
 	// set interactor
@@ -54,7 +57,7 @@ func GetGeneralFatimaRuntime() fatima.FatimaRuntime {
 	return process
 }
 
-
+// GetUserInteractiveFatimaRuntime return fatima runtime for user interactive type process
 func GetUserInteractiveFatimaRuntime(controller interface{}) fatima.FatimaRuntime {
 	if process != nil {
 		return process

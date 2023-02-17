@@ -32,7 +32,7 @@ import (
 	"bytes"
 	"fmt"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
+	"os"
 	"sort"
 	"strings"
 	"throosea.com/fatima"
@@ -104,6 +104,8 @@ type YamlFatimaPackageConfig struct {
 	Processes  []ProcessItem `yaml:"process"`
 }
 
+// NewYamlFatimaPackageConfig load fatima package processes information
+// from $FATIMA_HOME/conf/fatima-package.yaml
 func NewYamlFatimaPackageConfig(env fatima.FatimaEnv) *YamlFatimaPackageConfig {
 	instance := new(YamlFatimaPackageConfig)
 	instance.env = env
@@ -152,15 +154,16 @@ func (y *YamlFatimaPackageConfig) Save() {
 	var buff bytes.Buffer
 	buff.WriteString(comment)
 	buff.Write(d)
-	err = ioutil.WriteFile(y.env.GetFolderGuide().GetPackageProcFile(), buff.Bytes(), 0644)
+	err = os.WriteFile(y.env.GetFolderGuide().GetPackageProcFile(), buff.Bytes(), 0644)
 	if err != nil {
 		log.Warn("fail to save yaml configuration file : %s", err.Error())
 		return
 	}
 }
 
+// Reload read file ($FATIMA_HOME/conf/fatima-package.yaml)
 func (y *YamlFatimaPackageConfig) Reload() {
-	data, err := ioutil.ReadFile(y.env.GetFolderGuide().GetPackageProcFile())
+	data, err := os.ReadFile(y.env.GetFolderGuide().GetPackageProcFile())
 	check(err)
 
 	err = yaml.Unmarshal(data, &y)

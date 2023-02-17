@@ -25,12 +25,12 @@ package builder
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
-	"throosea.com/fatima"
-	"throosea.com/log"
 	"strconv"
 	"strings"
-	"os"
+	"throosea.com/fatima"
+	"throosea.com/log"
 )
 
 type PropertyConfigReader struct {
@@ -39,12 +39,16 @@ type PropertyConfigReader struct {
 	configuration map[string]string
 }
 
+// NewPropertyConfigReader serving properties(key/value) for process
 func NewPropertyConfigReader(env fatima.FatimaEnv, predefines fatima.Predefines) *PropertyConfigReader {
 	instance := new(PropertyConfigReader)
 	instance.env = env
+
+	// predefines : builtin + fatima global config
 	instance.predefines = predefines
 	instance.configuration = make(map[string]string)
 
+	// find proper properties file path for process
 	propFilePath := loadApplicationProperty(env)
 	if len(propFilePath) == 0 {
 		log.Warn("cannot load properties file...")
@@ -52,18 +56,27 @@ func NewPropertyConfigReader(env fatima.FatimaEnv, predefines fatima.Predefines)
 	}
 
 	log.Info("using properties file : %s", filepath.Base(propFilePath))
+
+	// read properties (key=value pairs)
 	props, err := readProperties(propFilePath)
 	if err != nil {
 		log.Warn("cannot load properties file : %s", err.Error())
 	}
 	if props != nil {
 		for k, v := range props {
-			instance.configuration[k] = predefines.ResolvePredefine(v)
+			// from application.xxx.properties
+			// e.g) writedb.url=${var.db.write.url}?autocommit=true&timeout=180s&readTimeout=180s
+			// k : writedb.url
+			// v : ${var.db.write.url}?autocommit=true&timeout=180s&readTimeout=180s
+			// maybe fatima global predefine file (fatima-package-predefines.properties) contains "var.db.write.url"
+			// so we need to resolve(replace)
+			instance.configuration[k] = predefines.ResolvePredefine(v) // PropertyPredefineReader.ResolvePredefine()
 		}
 	}
 	return instance
 }
 
+// loadApplicationProperty find proper properties file path for process
 func loadApplicationProperty(env fatima.FatimaEnv) string {
 	list := make([]string, 0)
 	if env.GetProfile() != "" {
@@ -97,7 +110,6 @@ func (this *PropertyConfigReader) GetString(key string) (string, error) {
 	return v, nil
 }
 
-
 func (this *PropertyConfigReader) GetInt(key string) (int, error) {
 	v, ok := this.configuration[key]
 	if !ok {
@@ -112,7 +124,6 @@ func (this *PropertyConfigReader) GetInt(key string) (int, error) {
 	return i, nil
 }
 
-
 func (this *PropertyConfigReader) GetBool(key string) (bool, error) {
 	v, ok := this.configuration[key]
 	if !ok {
@@ -120,13 +131,12 @@ func (this *PropertyConfigReader) GetBool(key string) (bool, error) {
 	}
 
 	switch strings.ToUpper(v) {
-	case "TRUE" :
+	case "TRUE":
 		return true, nil
 	}
 
 	return false, nil
 }
-
 
 func (this *PropertyConfigReader) ResolvePredefine(value string) string {
 	return this.predefines.ResolvePredefine(value)
@@ -136,7 +146,7 @@ func (this *PropertyConfigReader) GetDefine(key string) (string, bool) {
 	return this.predefines.GetDefine(key)
 }
 
-func checkFileAvailable(path string) bool	{
+func checkFileAvailable(path string) bool {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		log.Trace("file [%s] does not exist", filepath.Base(path))
 		return false
@@ -144,4 +154,3 @@ func checkFileAvailable(path string) bool	{
 
 	return true
 }
-

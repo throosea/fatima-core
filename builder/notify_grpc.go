@@ -54,9 +54,12 @@ type GrpcSystemNotifyHandler struct {
 	queue         chan []byte
 }
 
+// NewGrpcSystemNotifyHandler create system notify handler
+// fatima process send any event/alarm to saturn via grpc
 func NewGrpcSystemNotifyHandler(fatimaRuntime fatima.FatimaRuntime) (monitor.SystemNotifyHandler, error) {
-
 	handler := GrpcSystemNotifyHandler{fatimaRuntime: fatimaRuntime}
+
+	// all (want to deliver) message store to queue
 	handler.queue = make(chan []byte, maxQueueSize)
 	handler.saturnEnabled = true
 
@@ -72,6 +75,7 @@ func NewGrpcSystemNotifyHandler(fatimaRuntime fatima.FatimaRuntime) (monitor.Sys
 	return &handler, nil
 }
 
+// consumeQueue send event/alarm message to saturn
 func (s *GrpcSystemNotifyHandler) consumeQueue() {
 	for notifyItem := range s.queue {
 		if len(notifyItem) < 3 {

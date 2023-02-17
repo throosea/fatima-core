@@ -27,8 +27,8 @@ import (
 	"os"
 	"os/user"
 	"strconv"
-	"throosea.com/fatima"
 	"strings"
+	"throosea.com/fatima"
 )
 
 type FatimaSystemProc struct {
@@ -64,6 +64,8 @@ func (this *FatimaSystemProc) GetGid() string {
 	return this.gid
 }
 
+// load process information
+// pid, uid, username, homedir, gid, programname
 func newSystemProc() fatima.SystemProc {
 	proc := new(FatimaSystemProc)
 	proc.pid = os.Getpid()
@@ -85,12 +87,13 @@ func newSystemProc() fatima.SystemProc {
 }
 
 var debugappList = [...]string{"-debugapp=", "debugapp="}
+
 func getDebugAppName() string {
 	if len(os.Args) == 1 {
 		return ""
 	}
 
-	for _, v := range os.Args[1:]	{
+	for _, v := range os.Args[1:] {
 		for _, s := range debugappList {
 			if strings.HasPrefix(v, s) {
 				return v[len(s):]

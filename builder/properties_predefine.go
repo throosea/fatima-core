@@ -51,17 +51,24 @@ func (this variableValue) getValue() string {
 }
 
 type PropertyPredefineReader struct {
-	env					fatima.FatimaEnv
-	builtinVariables	[]variableValue
-	defines				map[string]string
-	replacer			*strings.Replacer
+	env              fatima.FatimaEnv
+	builtinVariables []variableValue
+
+	// defines service key/value properties
+	defines  map[string]string
+	replacer *strings.Replacer
 }
 
+// NewPropertyPredefineReader serving fatima package global(shared) properties
 func NewPropertyPredefineReader(env fatima.FatimaEnv) *PropertyPredefineReader {
 	instance := new(PropertyPredefineReader)
 	instance.env = env
 	instance.defines = make(map[string]string)
+
+	// create builtin properties
 	instance.buildBuiltin()
+
+	// serving fatima global configuration properties as variable
 	instance.prepareMatchers()
 	return instance
 }
@@ -75,6 +82,8 @@ func (reader *PropertyPredefineReader) GetDefine(key string) (string, bool) {
 	return v, ok
 }
 
+// buildBuiltin create builtin properties
+// e.g) ${var.builtin.fatima.home}, ${var.builtin.local.ipaddress}
 func (reader *PropertyPredefineReader) buildBuiltin() {
 	reader.builtinVariables = make([]variableValue, 0)
 
@@ -87,21 +96,30 @@ func (reader *PropertyPredefineReader) buildBuiltin() {
 	reader.appendBuiltinVar(variableValue{BUILTIN_VARIABLE_APP_FOLDER_DATA, reader.env.GetFolderGuide().GetDataFolder()})
 }
 
+// prepareMatchers serving fatima global configuration properties as variable
 func (reader *PropertyPredefineReader) prepareMatchers() {
 	var matchers []string
+
+	// add builtin vars to matchers
 	for _, v := range reader.builtinVariables {
 		matchers = append(matchers, string(v.key))
 		matchers = append(matchers, v.getValue())
 	}
 	replacer := strings.NewReplacer(matchers...)
 	props, _ := readProperties(filepath.Join(reader.env.GetFolderGuide().GetConfFolder(), "fatima-package-predefine.properties"))
+
+	// add package global properties to matchers
 	for k, v := range props {
 		keyForm := fmt.Sprintf("${%s}", k)
+
+		// we have to call 'Replace' because package global property contains 'builtin'
 		valueForm := replacer.Replace(v)
 		reader.defines[keyForm] = valueForm
 		matchers = append(matchers, keyForm)
 		matchers = append(matchers, valueForm)
 	}
+
+	// replacer : new Replacer from a list of old, new string pairs
 	reader.replacer = strings.NewReplacer(matchers...)
 }
 
@@ -109,6 +127,7 @@ func (reader *PropertyPredefineReader) appendBuiltinVar(v variableValue) {
 	reader.builtinVariables = append(reader.builtinVariables, v)
 }
 
+// getDefaultIpAddress find local ipv4 address
 func getDefaultIpAddress() string {
 	// func Interfaces() ([]Interface, error)
 	inf, err := net.Interfaces()

@@ -102,28 +102,48 @@ func (this *FatimaFolderGuide) CreateTmpFilePath() string {
 	return filepath.Join(tmpDir, seed)
 }
 
+// create relative directory list using prograName
 func (this *FatimaFolderGuide) resolveFolder(programName string) {
+	// program app dir
 	this.app = filepath.Join(this.fatimaHomePath, FatimaFolderApp, programName)
 	checkDirectory(this.app, true)
+
 	this.bin = filepath.Join(this.fatimaHomePath, FatimaFolderBin, programName)
 	checkDirectory(this.bin, false)
+
+	// global fatima config dir
 	this.conf = filepath.Join(this.fatimaHomePath, FatimaFolderConf)
 	checkDirectory(this.conf, false)
+
+	// program data dir
 	this.data = filepath.Join(this.fatimaHomePath, FatimaFolderData, programName)
 	checkDirectory(this.data, true)
+
+	// global java (3rd party) lib dir
 	this.javalib = filepath.Join(this.fatimaHomePath, FatimaFolderJavalib)
 	checkDirectory(this.javalib, false)
+
+	// global c/c++ (3rd party) lib dir. LD_LIBRARY_PATH
 	this.lib = filepath.Join(this.fatimaHomePath, FatimaFolderLib)
 	checkDirectory(this.lib, false)
+
+	// program log dir
 	this.log = filepath.Join(this.fatimaHomePath, FatimaFolderLog, programName)
 	checkDirectory(this.log, true)
+
+	// global fatima package dir
 	this.pack = filepath.Join(this.fatimaHomePath, FatimaFolderPackage)
 	checkDirectory(this.pack, false)
+
+	// program stat dir
 	this.stat = filepath.Join(this.fatimaHomePath, FatimaFolderStat, programName)
 	checkDirectory(this.stat, true)
+
+	// program proc dir
 	this.proc = filepath.Join(this.app, FatimaFolderProc)
 	checkDirectory(this.proc, true)
 
+	// remove/clear (previous) created process tmp dir
 	os.RemoveAll(filepath.Join(this.data, ".tmp"))
 }
 
@@ -133,6 +153,7 @@ func checkDirectory(path string, forceCreate bool) {
 	}
 }
 
+// create FolderGuide
 func newFolderGuide(proc fatima.SystemProc) fatima.FolderGuide {
 	folderGuide := new(FatimaFolderGuide)
 	folderGuide.fatimaHomePath = os.Getenv(fatima.ENV_FATIMA_HOME)
