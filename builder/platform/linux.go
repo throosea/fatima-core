@@ -57,7 +57,7 @@ func (p *OSPlatform) EnsureSingleInstance(proc fatima.SystemProc) error {
 			continue
 		}
 		if p.Executable() == proc.GetProgramName() {
-			return errors.New("aleady process running...")
+			return errors.New("already process running...")
 		}
 	}
 
