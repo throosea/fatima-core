@@ -62,6 +62,7 @@ func registComponent(comp fatima.FatimaComponent) {
 	}
 }
 
+// initializeComponent : initialize registed FatimaComponent
 func initializeComponent() (res bool) {
 	res = false
 
@@ -137,7 +138,6 @@ func shutdownComponent(program string) {
 		}
 	}()
 
-
 	size := len(all)
 	if size > 0 {
 		cyBarrier := lib.NewCyclicBarrier(size, func() {
@@ -155,8 +155,7 @@ func shutdownComponent(program string) {
 	log.Close()
 }
 
-
-func goawayComponent()  {
+func goawayComponent() {
 	log.Info("start calling goaway...")
 	defer func() {
 		if r := recover(); r != nil {
@@ -195,7 +194,7 @@ func goawayComponent()  {
 	log.Info("goaway %d component", len(target))
 }
 
-func callGoaway(wg *sync.WaitGroup, comp fatima.FatimaRuntimeGoaway)	{
+func callGoaway(wg *sync.WaitGroup, comp fatima.FatimaRuntimeGoaway) {
 	defer wg.Done()
 	comp.Goaway()
 }

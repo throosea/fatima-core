@@ -105,7 +105,7 @@ func (reader *PropertyPredefineReader) prepareMatchers() {
 		matchers = append(matchers, string(v.key))
 		matchers = append(matchers, v.getValue())
 	}
-	replacer := strings.NewReplacer(matchers...)
+	builtinReplacer := strings.NewReplacer(matchers...)
 	props, _ := readProperties(filepath.Join(reader.env.GetFolderGuide().GetConfFolder(), "fatima-package-predefine.properties"))
 
 	// add package global properties to matchers
@@ -113,13 +113,13 @@ func (reader *PropertyPredefineReader) prepareMatchers() {
 		keyForm := fmt.Sprintf("${%s}", k)
 
 		// we have to call 'Replace' because package global property contains 'builtin'
-		valueForm := replacer.Replace(v)
+		valueForm := builtinReplacer.Replace(v)
 		reader.defines[keyForm] = valueForm
 		matchers = append(matchers, keyForm)
 		matchers = append(matchers, valueForm)
 	}
 
-	// replacer : new Replacer from a list of old, new string pairs
+	// builtinReplacer : new Replacer from a list of old, new string pairs
 	reader.replacer = strings.NewReplacer(matchers...)
 }
 

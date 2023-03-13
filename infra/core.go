@@ -64,47 +64,50 @@ func NewProcessInteractor(runtimeProcess *builder.FatimaRuntimeProcess) *Default
 	instance.readers = make([]fatima.FatimaIOReader, 0)
 	instance.measurement = newSystemMeasureManagement(runtimeProcess)
 
+	// check HA/PS status every 1 second
 	oneSecondTickWorkers = append(oneSecondTickWorkers, instance.awareManager)
+	// process mgmt every 5 seconds
 	fiveSecondTickWorkers = append(fiveSecondTickWorkers, instance.measurement)
 
 	startTickers()
 	return instance
 }
 
-func (this *DefaultProcessInteractor) Regist(component fatima.FatimaComponent) {
+// Regist regist FatimaComponent
+func (i *DefaultProcessInteractor) Regist(component fatima.FatimaComponent) {
 	registComponent(component)
 
 	if comp, ok := component.(monitor.FatimaSystemHAAware); ok {
-		this.RegistSystemHAAware(comp)
+		i.RegistSystemHAAware(comp)
 	}
 
 	if comp, ok := component.(monitor.FatimaSystemPSAware); ok {
-		this.RegistSystemPSAware(comp)
+		i.RegistSystemPSAware(comp)
 	}
 
 	if comp, ok := component.(fatima.FatimaIOReader); ok {
-		this.readers = append(this.readers, comp)
+		i.readers = append(i.readers, comp)
 	}
 }
 
-func (this *DefaultProcessInteractor) RegistSystemHAAware(aware monitor.FatimaSystemHAAware) {
-	this.awareManager.RegistSystemHAAware(aware)
+func (i *DefaultProcessInteractor) RegistSystemHAAware(aware monitor.FatimaSystemHAAware) {
+	i.awareManager.RegistSystemHAAware(aware)
 }
 
-func (this *DefaultProcessInteractor) RegistSystemPSAware(aware monitor.FatimaSystemPSAware) {
-	this.awareManager.RegistSystemPSAware(aware)
+func (i *DefaultProcessInteractor) RegistSystemPSAware(aware monitor.FatimaSystemPSAware) {
+	i.awareManager.RegistSystemPSAware(aware)
 }
 
-func (this *DefaultProcessInteractor) Initialize() bool {
+func (i *DefaultProcessInteractor) Initialize() bool {
 	return initializeComponent()
 }
 
-func (this *DefaultProcessInteractor) Goaway() {
+func (i *DefaultProcessInteractor) Goaway() {
 	goawayComponent()
 }
 
-func (this *DefaultProcessInteractor) startListening() {
-	for _, v := range this.readers {
+func (i *DefaultProcessInteractor) startListening() {
+	for _, v := range i.readers {
 		t := v
 		go func() {
 			t.StartListening()
@@ -112,36 +115,44 @@ func (this *DefaultProcessInteractor) startListening() {
 	}
 }
 
-func (this *DefaultProcessInteractor) Run() {
-	this.startListening()
+// RUN start process business activity
+func (i *DefaultProcessInteractor) Run() {
+	// start listening (Reader type FatimaComponent)
+	i.startListening()
+
+	// start batche jobs
 	lib.StartCron()
+
+	// notify process bootup
 	bootupNotify()
-	this.pprofService()
-	if this.runtimeProcess.GetBuilder().GetProcessType() == fatima.PROCESS_TYPE_GENERAL {
-		message := fmt.Sprintf("%s process started", this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
-		this.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlarmLevelMinor, message)
+
+	// start pprof service if relative property exists
+	i.pprofService()
+	if i.runtimeProcess.GetBuilder().GetProcessType() == fatima.PROCESS_TYPE_GENERAL {
+		message := fmt.Sprintf("%s process started", i.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
+		i.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlarmLevelMinor, message)
 	}
 }
 
-func (this *DefaultProcessInteractor) Stop() {
+func (i *DefaultProcessInteractor) Stop() {
 
 }
 
-func (this *DefaultProcessInteractor) Shutdown() {
-	if this.runtimeProcess.GetBuilder().GetProcessType() == fatima.PROCESS_TYPE_GENERAL {
-		message := fmt.Sprintf("%s process shutdowned", this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
-		this.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlamLevelMajor, message)
+func (i *DefaultProcessInteractor) Shutdown() {
+	if i.runtimeProcess.GetBuilder().GetProcessType() == fatima.PROCESS_TYPE_GENERAL {
+		message := fmt.Sprintf("%s process shutdowned", i.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
+		i.runtimeProcess.GetSystemNotifyHandler().SendAlarm(monitor.AlamLevelMajor, message)
 	}
 	lib.StopCron()
-	shutdownComponent(this.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
+	shutdownComponent(i.runtimeProcess.GetEnv().GetSystemProc().GetProgramName())
 }
 
-func (this *DefaultProcessInteractor) RegistMeasureUnit(unit monitor.SystemMeasurable) {
-	this.measurement.registUnit(unit)
+func (i *DefaultProcessInteractor) RegistMeasureUnit(unit monitor.SystemMeasurable) {
+	i.measurement.registUnit(unit)
 }
 
-func (this *DefaultProcessInteractor) pprofService() {
-	addr, ok := this.runtimeProcess.GetConfig().GetValue(builder.GOFATIMA_PROP_PPROF_ADDRESS)
+func (i *DefaultProcessInteractor) pprofService() {
+	addr, ok := i.runtimeProcess.GetConfig().GetValue(builder.GOFATIMA_PROP_PPROF_ADDRESS)
 	if ok {
 		go func() {
 			err := http.ListenAndServe(addr, http.DefaultServeMux)

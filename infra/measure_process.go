@@ -38,12 +38,13 @@ func newProcessMeasurement() *ProcessMeasurement {
 type ProcessMeasurement struct {
 }
 
-func (this *ProcessMeasurement) GetKeyName() string {
+func (p *ProcessMeasurement) GetKeyName() string {
 	return "fatima process"
 }
 
 var lastGcCount uint32
-func (this *ProcessMeasurement) GetMeasure() string {
+
+func (p *ProcessMeasurement) GetMeasure() string {
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
 	if mem.LastGC == 0 {

@@ -26,12 +26,12 @@ package infra
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"throosea.com/fatima"
 	"throosea.com/log"
-	"io/ioutil"
 	"time"
 )
 
@@ -68,6 +68,7 @@ func newMeasureFileWriter(env fatima.FatimaEnv) *MeasureFileWriter {
 	return instance
 }
 
+// clearOldHistory delete old(before 24 hour) monitor files from history folder
 func clearOldHistory(path string) {
 	// find files in log path
 	files, err := ioutil.ReadDir(path)
@@ -85,6 +86,7 @@ func clearOldHistory(path string) {
 	}
 }
 
+// moveOldToHistory move old monitor record files into history folder
 func moveOldToHistory(procName string, folder string, history string, except string) {
 	files, _ := filepath.Glob(fmt.Sprintf("%s%c%s.*", folder, filepath.Separator, procName))
 	for _, v := range files {

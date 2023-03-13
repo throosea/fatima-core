@@ -55,59 +55,59 @@ func newSystemAwareManagement(runtimeProcess *builder.FatimaRuntimeProcess, mon 
 	return instance
 }
 
-func (this *SystemAwareManagement) RegistSystemHAAware(aware monitor.FatimaSystemHAAware) {
-	this.awareHA = append(this.awareHA, aware)
+func (s *SystemAwareManagement) RegistSystemHAAware(aware monitor.FatimaSystemHAAware) {
+	s.awareHA = append(s.awareHA, aware)
 }
 
-func (this *SystemAwareManagement) RegistSystemPSAware(aware monitor.FatimaSystemPSAware) {
-	this.awarePS = append(this.awarePS, aware)
+func (s *SystemAwareManagement) RegistSystemPSAware(aware monitor.FatimaSystemPSAware) {
+	s.awarePS = append(s.awarePS, aware)
 }
 
-func (this *SystemAwareManagement) SystemHAStatusChanged(newHAStatus monitor.HAStatus) {
+func (s *SystemAwareManagement) SystemHAStatusChanged(newHAStatus monitor.HAStatus) {
 	log.Warn("new HA Status detected : %s", newHAStatus)
-	for _, aware := range this.awareHA {
+	for _, aware := range s.awareHA {
 		aware.SystemHAStatusChanged(newHAStatus)
 	}
 }
 
-func (this *SystemAwareManagement) SystemPSStatusChanged(newPSStatus monitor.PSStatus) {
+func (s *SystemAwareManagement) SystemPSStatusChanged(newPSStatus monitor.PSStatus) {
 	log.Warn("new PS Status detected : %s", newPSStatus)
-	for _, aware := range this.awarePS {
+	for _, aware := range s.awarePS {
 		aware.SystemPSStatusChanged(newPSStatus)
 	}
 }
 
-func (this *SystemAwareManagement) Process() {
-	currentStatus := this.runtimeProcess.GetSystemStatus().(*builder.FatimaPackageSystemStatus)
+func (s *SystemAwareManagement) Process() {
+	currentStatus := s.runtimeProcess.GetSystemStatus().(*builder.FatimaPackageSystemStatus)
 
 	// check and deliver PS change
-	if ps, ok := this.monitor.GetPSStatus(); ok {
+	if ps, ok := s.monitor.GetPSStatus(); ok {
 		oldps := currentStatus.GetPSStatus()
 		if oldps != ps {
 			currentStatus.SetPSStatus(ps)
 			go func() {
-				this.SystemPSStatusChanged(ps)
+				s.SystemPSStatusChanged(ps)
 			}()
 		}
 	}
 
 	// check and deliver HA change
-	if ha, ok := this.monitor.GetHAStatus(); ok {
+	if ha, ok := s.monitor.GetHAStatus(); ok {
 		oldha := currentStatus.GetHAStatus()
 		if oldha != ha {
 			currentStatus.SetHAStatus(ha)
 			go func() {
-				this.SystemHAStatusChanged(ha)
+				s.SystemHAStatusChanged(ha)
 			}()
 		}
 	}
 
 	// check and deliver loglevel change
-	if logLevel, ok := this.monitor.GetLogLevel(); ok {
-		if this.runtimeProcess.GetLogLevel() != logLevel {
+	if logLevel, ok := s.monitor.GetLogLevel(); ok {
+		if s.runtimeProcess.GetLogLevel() != logLevel {
 			log.SetLevel(logLevel)
 			log.Warn("fatima proc log level : %s", logLevel)
-			this.runtimeProcess.SetLogLevel(logLevel)
+			s.runtimeProcess.SetLogLevel(logLevel)
 		}
 	}
 }

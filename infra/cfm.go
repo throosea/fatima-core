@@ -32,8 +32,8 @@ import (
 	"strconv"
 	"strings"
 	"throosea.com/fatima"
-	"throosea.com/log"
 	"throosea.com/fatima/monitor"
+	"throosea.com/log"
 )
 
 type logLevelItem struct {
@@ -51,9 +51,9 @@ func newCentralFilebaseManagement(env fatima.FatimaEnv) *CentralFilebaseManageme
 	return instance
 }
 
-func (this *CentralFilebaseManagement) GetPSStatus() (monitor.PSStatus, bool) {
+func (c *CentralFilebaseManagement) GetPSStatus() (monitor.PSStatus, bool) {
 	filePath := filepath.Join(
-		this.env.GetFolderGuide().GetFatimaHome(),
+		c.env.GetFolderGuide().GetFatimaHome(),
 		"package",
 		"cfm",
 		"ha",
@@ -73,9 +73,9 @@ func (this *CentralFilebaseManagement) GetPSStatus() (monitor.PSStatus, bool) {
 	return monitor.ToPSStatus(value), true
 }
 
-func (this *CentralFilebaseManagement) GetHAStatus() (monitor.HAStatus, bool) {
+func (c *CentralFilebaseManagement) GetHAStatus() (monitor.HAStatus, bool) {
 	filePath := filepath.Join(
-		this.env.GetFolderGuide().GetFatimaHome(),
+		c.env.GetFolderGuide().GetFatimaHome(),
 		"package",
 		"cfm",
 		"ha",
@@ -95,9 +95,9 @@ func (this *CentralFilebaseManagement) GetHAStatus() (monitor.HAStatus, bool) {
 	return monitor.ToHAStatus(value), true
 }
 
-func (this *CentralFilebaseManagement) GetLogLevel() (log.LogLevel, bool) {
+func (c *CentralFilebaseManagement) GetLogLevel() (log.LogLevel, bool) {
 	filePath := filepath.Join(
-		this.env.GetFolderGuide().GetFatimaHome(),
+		c.env.GetFolderGuide().GetFatimaHome(),
 		"package",
 		"cfm",
 		"loglevels")
@@ -115,7 +115,7 @@ func (this *CentralFilebaseManagement) GetLogLevel() (log.LogLevel, bool) {
 		return log.LOG_NONE, false
 	}
 
-	value, ok := items[this.env.GetSystemProc().GetProgramName()]
+	value, ok := items[c.env.GetSystemProc().GetProgramName()]
 	if !ok {
 		// not found
 		return log.LOG_NONE, false

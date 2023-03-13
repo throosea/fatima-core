@@ -273,6 +273,8 @@ func (process *FatimaRuntimeProcess) Run() {
 	go func() {
 		for true {
 			sig := <-process.sigs
+
+			// SIGUSR1 : call goaway
 			if sig == syscall.SIGUSR1 {
 				process.interactor.Goaway()
 				continue
@@ -344,16 +346,20 @@ func (process *FatimaRuntimeProcess) Initialize(builder FatimaRuntimeBuilder) {
 	process.status = proc_status_initializing
 	process.builder = builder
 
+	// load process information from package : fatima-package.yaml
 	pkgProc := process.getThisPkgProc()
 
+	// set throosea.com/log parameters
 	buildLogging(builder)
 
+	// match log level
 	process.logLevel = pkgProc.GetLogLevel()
 	if process.logLevel != log.GetLevel() {
 		log.SetLevel(process.logLevel)
 		log.Info("change log level : %s", process.logLevel)
 	}
 
+	// initialize process 'proc' folder
 	process.parepareProcFolder(pkgProc, builder.GetProcessType())
 	process.status = proc_status_ready
 }
@@ -446,6 +452,7 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 	procFolder := process.env.GetFolderGuide().GetAppProcFolder()
 
 	// remove old output files
+	// output file scheme : {process}.{pid}.ouput
 	files, _ := filepath.Glob(fmt.Sprintf("%s%c%s.*.output", procFolder, filepath.Separator, proc.GetName()))
 	for _, v := range files {
 		if getFileSize(v) > 0 {
@@ -462,6 +469,7 @@ func (process *FatimaRuntimeProcess) parepareProcFolder(proc fatima.FatimaPkgPro
 	}
 
 	// create my pid file
+	// pid file scheme : {process}.pid
 	pid := []byte(fmt.Sprintf("%d", process.env.GetSystemProc().GetPid()))
 	err := os.WriteFile(filepath.Join(procFolder, process.env.GetSystemProc().GetProgramName()+".pid"), pid, 0644)
 	check(err)
